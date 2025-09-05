@@ -178,27 +178,22 @@
                         </a>
                     </div>
                 </div>
-
-                <label class="flex items-center gap-3 p-4 bg-base-200 rounded-lg cursor-pointer">
-                    <input type="checkbox" name="dont_show" id="dont_show" class="checkbox checkbox-primary" checked />
-                    <span class="text-sm">Don't show this tour on next visit</span>
-                </label>
             </div>
         </div>
 
         <!-- Navigation Buttons -->
         <div class="modal-action justify-between">
-            <form method="dialog" id="tour-close-form" class="hidden">
-                <button class="btn btn-ghost">Close</button>
-            </form>
-            
             <button id="tour-prev" 
                     class="btn btn-ghost"
                     _="on click 
-                       set currentStep to @data-step of #tour-content then 
-                       decrement currentStep then
-                       send showStep(step: currentStep) to #tour-content">
-                Previous
+                       set currentStep to @data-step of #tour-content
+                       if currentStep == 1
+                           call tour_modal.close()
+                       else
+                           decrement currentStep then
+                           send showStep(step: currentStep) to #tour-content
+                       end">
+                <span id="tour-prev-text">Previous</span>
             </button>
             
             <div class="flex gap-2">
@@ -220,9 +215,8 @@
                 
                 <button id="tour-finish" 
                         class="btn btn-success hidden"
-                        hx-post="{{host}}/settings/tour-complete"
+                        hx-post="{{host}}/settings/tour-complete?dont_show=true"
                         hx-trigger="click"
-                        hx-include="#dont_show"
                         _="on htmx:afterRequest call tour_modal.close()">
                     Get Started
                 </button>
@@ -254,11 +248,9 @@
         end
         
         if step == 1
-            hide #tour-prev
-            show #tour-close-form
+            set #tour-prev-text.innerText to 'Close'
         else
-            show #tour-prev
-            hide #tour-close-form
+            set #tour-prev-text.innerText to 'Previous'
         end
         
         if step == 4
