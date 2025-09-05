@@ -158,6 +158,51 @@ go test ./internal/...
 
 Note: Database-dependent tests are skipped until testutils supports test databases.
 
+## Security Features
+
+### Rate Limiting
+- Authentication attempts limited to 5 per minute per IP
+- In-memory rate limiter with automatic cleanup
+- Configured in `internal/ratelimit.go`
+
+### Structured Logging
+- Log levels: DEBUG, INFO, WARN, ERROR
+- Set via `LOG_LEVEL` environment variable
+- Structured format with timestamps
+- Configured in `internal/logger.go`
+
+## UI Enhancements
+
+### Loading Indicators
+- HTMX operations show loading spinners
+- Clone repository shows "Cloning..." with spinner
+- Buttons disabled during operations
+
+### Keyboard Shortcuts
+- `Ctrl/Cmd + K`: Open VS Code
+- `Ctrl/Cmd + N`: Clone new repository  
+- `Escape`: Close modals
+- Configured in `views/public/shortcuts.js`
+
+## API Endpoints
+
+### Health Check
+- `GET /health` - Returns `{"status":"healthy"}` for monitoring
+
+### Repository Management
+- `POST /repos/clone` - Clone a new repository
+- `POST /repos/pull/{name}` - Pull latest changes
+- `POST /repos/delete/{name}` - Delete repository
+
+### Authentication
+- `POST /_auth/signup` - Create admin account (first time only)
+- `POST /_auth/signin` - Sign in with rate limiting
+- `POST /_auth/signout` - Sign out
+
+### Monitoring
+- `GET /partials/stats` - Get system stats (HTMX partial)
+- `GET /partials/coder-status` - Get VS Code status
+
 ## Common Development Tasks
 
 ### Adding New Features

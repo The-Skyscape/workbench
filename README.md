@@ -12,6 +12,7 @@ A personal development environment that provides developers with a persistent, c
 - Secure single-admin system
 - JWT-based authentication with httpOnly cookies
 - Inline auth pages (no separate routes)
+- Rate limiting (5 attempts per minute)
 
 ### 📦 Repository Management
 - Clone repositories from any Git source (GitHub, GitLab, Bitbucket, etc.)
@@ -24,18 +25,21 @@ A personal development environment that provides developers with a persistent, c
 - Persistent workspace across sessions
 - Access from any browser
 - All your extensions and settings
+- Keyboard shortcuts (Ctrl/Cmd+K to open)
 
 ### 📊 System Monitoring
 - Real-time CPU and memory usage
 - **Data Storage monitoring** (persistent data only, not system disk)
 - Auto-refreshing stats every 10 seconds
 - Clean visualization with progress bars
+- Health check endpoint for external monitoring
 
 ### 📝 Activity Tracking
 - Track all repository operations
-- Authentication events logging
+- Authentication events logging  
 - Chronological activity feed
 - User action attribution
+- Structured logging with configurable levels
 
 ## Quick Start
 
@@ -107,6 +111,7 @@ Built with [TheSkyscape DevTools](https://github.com/The-Skyscape/devtools) MVC 
 | `PORT` | No | 5000 | Server port |
 | `SSL_FULLCHAIN` | No | - | SSL certificate path |
 | `SSL_PRIVKEY` | No | - | SSL private key path |
+| `LOG_LEVEL` | No | INFO | Logging level (DEBUG, INFO, WARN, ERROR) |
 
 ## API Routes
 
@@ -117,12 +122,19 @@ Built with [TheSkyscape DevTools](https://github.com/The-Skyscape/devtools) MVC 
 
 ### Authentication
 - `POST /_auth/signup` - Create admin account (first time only)
-- `POST /_auth/signin` - Sign in
+- `POST /_auth/signin` - Sign in (with rate limiting)
 - `POST /_auth/signout` - Sign out
 
 ### Monitoring
+- `GET /health` - Health check endpoint
 - `GET /partials/stats` - Get system stats (HTMX partial)
 - `GET /partials/coder-status` - Get VS Code status
+
+## Keyboard Shortcuts
+
+- `Ctrl/Cmd + K` - Open VS Code
+- `Ctrl/Cmd + N` - Clone new repository
+- `Escape` - Close modals
 
 ## Testing
 
@@ -156,21 +168,20 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Deployment
 
-Currently deployed at: https://test-bench.theskyscape.com
-
 ### System Requirements
 
 - **Minimum**: 1 vCPU, 2GB RAM, 20GB Storage
-- **Recommended**: 2 vCPU, 4GB RAM, 80GB Storage
-- **OS**: Ubuntu 22.04 LTS or similar
+- **OS**: Ubuntu 22.04 LTS or compile for your target os
 
 ## Security Considerations
 
 - Single-user system (not designed for multi-tenancy)
-- SSH keys are auto-generated and stored in container
+- SSH keys are auto-generated and persist through restarts
 - All passwords are bcrypt hashed
 - JWT tokens stored in httpOnly cookies
 - CSRF protection via HTMX same-origin policy
+- Rate limiting on authentication endpoints
+- Structured logging for security auditing
 
 ## Monitoring Details
 

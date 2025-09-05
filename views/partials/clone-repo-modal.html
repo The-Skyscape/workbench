@@ -3,7 +3,10 @@
     <div class="modal-box">
         <h3 class="font-bold text-lg">Clone Repository</h3>
         <p class="text-base-content/70 text-sm mb-4">Bring along your code wherever it may be</p>
-        <form hx-post="{{host}}/repos/clone" hx-target="#clone-error" hx-swap="innerHTML" class="flex flex-col gap-2">
+        <form hx-post="{{host}}/repos/clone" 
+              hx-target="#clone-error" 
+              hx-swap="innerHTML"
+              class="flex flex-col gap-2">
             <div id="clone-error" class="error-message"></div>
             
             <label class="form-control w-full">
@@ -46,7 +49,13 @@
                            end">
                     Copy Public Key
                 </button>
-                <button type="submit" class="btn btn-primary">Clone Repository</button>
+                <button type="submit" class="btn btn-primary"
+                        _="on htmx:beforeRequest 
+                           set my innerHTML to '<span class=loading loading-spinner loading-xs></span> Cloning...' then
+                           add @disabled to me
+                           on htmx:afterRequest
+                           set my innerHTML to 'Clone Repository' then
+                           remove @disabled from me">Clone Repository</button>
             </div>
         </form>
     </div>
@@ -54,19 +63,4 @@
         <button>close</button>
     </form>
 </dialog>
-
-<script>
-// Close modal on successful clone
-document.body.addEventListener('htmx:afterRequest', function(evt) {
-    if (evt.detail.xhr.status === 200 && evt.detail.elt.closest('#clone_modal')) {
-        if (!evt.detail.xhr.responseText.includes('error')) {
-            clone_modal.close();
-            // Clear form
-            evt.detail.elt.reset();
-            // Refresh page to show new repo
-            window.location.reload();
-        }
-    }
-});
-</script>
 {{end}}

@@ -138,6 +138,13 @@ func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 
 // handleSignin authenticates the single user
 func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
+	// Check rate limit by IP
+	clientIP := r.RemoteAddr
+	if !internal.AuthRateLimiter.Allow(clientIP) {
+		c.Render(w, r, "error-message.html", errors.New("too many login attempts, please wait a minute"))
+		return
+	}
+
 	// Parse form data
 	if err := r.ParseForm(); err != nil {
 		c.Render(w, r, "error-message.html", errors.New("invalid form data"))
