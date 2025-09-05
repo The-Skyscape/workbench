@@ -180,7 +180,7 @@
                 </div>
 
                 <label class="flex items-center gap-3 p-4 bg-base-200 rounded-lg cursor-pointer">
-                    <input type="checkbox" id="dont-show-tour" class="checkbox checkbox-primary" />
+                    <input type="checkbox" name="dont_show" id="dont_show" class="checkbox checkbox-primary" checked />
                     <span class="text-sm">Don't show this tour on next visit</span>
                 </label>
             </div>
@@ -188,6 +188,10 @@
 
         <!-- Navigation Buttons -->
         <div class="modal-action justify-between">
+            <form method="dialog" id="tour-close-form" class="hidden">
+                <button class="btn btn-ghost">Close</button>
+            </form>
+            
             <button id="tour-prev" 
                     class="btn btn-ghost"
                     _="on click 
@@ -199,7 +203,7 @@
             
             <div class="flex gap-2">
                 <button class="btn btn-ghost"
-                        hx-post="{{host}}/settings/tour-complete" 
+                        hx-post="{{host}}/settings/tour-complete?dont_show=true" 
                         hx-trigger="click"
                         _="on htmx:afterRequest call tour_modal.close()">
                     Skip Tour
@@ -218,7 +222,7 @@
                         class="btn btn-success hidden"
                         hx-post="{{host}}/settings/tour-complete"
                         hx-trigger="click"
-                        hx-include="#dont-show-tour"
+                        hx-include="#dont_show"
                         _="on htmx:afterRequest call tour_modal.close()">
                     Get Started
                 </button>
@@ -250,9 +254,11 @@
         end
         
         if step == 1
-            set @disabled of #tour-prev to true
+            hide #tour-prev
+            show #tour-close-form
         else
-            set @disabled of #tour-prev to false
+            show #tour-prev
+            hide #tour-close-form
         end
         
         if step == 4
