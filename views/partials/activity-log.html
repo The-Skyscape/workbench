@@ -1,5 +1,5 @@
 {{if workbench.GetRecentActivity}}
-    <ul class="list overflow-y-auto max-h-64">
+    <ul class="list overflow-y-auto max-h-64 min-h-[256px]">
         {{range workbench.GetRecentActivity}}
         <li class="list-row">
             <div class="flex items-start gap-3 w-full">
@@ -40,7 +40,7 @@
         {{end}}
     </ul>
 {{else}}
-    <div class="text-center py-8 text-base-content/50">
+    <div class="text-center py-8 text-base-content/50 min-h-[256px] flex flex-col items-center justify-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
