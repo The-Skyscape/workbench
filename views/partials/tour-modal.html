@@ -238,18 +238,12 @@
 </dialog>
 
 <script type="text/hyperscript">
-    -- Tour step management
     on showStep(step) from #tour-content
-        -- Store current step
         set @data-step of #tour-content to step
         
-        -- Hide all steps
         add .hidden to .step-content
-        
-        -- Show current step
         remove .hidden from #tour-step-{step}
         
-        -- Update progress indicators
         for i in [1, 2, 3, 4]
             if i <= step
                 add .step-primary to #step-indicator-{i}
@@ -258,7 +252,6 @@
             end
         end
         
-        -- Update navigation buttons
         if step == 1
             set @disabled of #tour-prev to true
         else
@@ -274,18 +267,15 @@
         end
     end
     
-    -- Close tour and save preference
     on closeTour from #tour-content
         fetch '{{host}}/settings/tour-complete' with method:'POST'
         call tour_modal.close()
     end
     
-    -- Initialize on load
     on load from #tour-content
         set @data-step of me to 1
     end
     
-    -- Keyboard shortcuts
     on keydown[key=='Escape'] from window
         if tour_modal.open send closeTour to #tour-content
     end
