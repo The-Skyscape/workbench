@@ -222,6 +222,7 @@
     on load
         wait 500ms
         call tour_modal.showModal()
+        send showStep(step: 1) to #tour-content
     end
 </script>
 {{end}}

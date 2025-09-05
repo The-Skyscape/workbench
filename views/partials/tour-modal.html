@@ -120,23 +120,18 @@
                 <div class="space-y-4 mb-6">
                     <div class="bg-base-200 rounded-lg p-4">
                         <h3 class="font-semibold mb-2">Quick Access</h3>
-                        <p class="text-sm text-base-content/70 mb-3">Click "Open VS Code" to launch your IDE</p>
-                        <div class="flex items-center gap-2">
-                            <kbd class="kbd kbd-sm">Ctrl</kbd>
-                            <span class="text-sm">+</span>
-                            <kbd class="kbd kbd-sm">K</kbd>
-                            <span class="text-sm text-base-content/70 ml-2">Keyboard shortcut</span>
-                        </div>
+                        <p class="text-sm text-base-content/70">Click "Open VS Code" in the Quick Actions panel to launch your IDE in a new tab</p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-base-200 rounded-lg p-3">
-                            <h4 class="font-medium text-sm mb-1">Pre-installed</h4>
+                            <h4 class="font-medium text-sm mb-1">Integrates With</h4>
                             <ul class="text-xs text-base-content/70 space-y-1">
-                                <li>• Node.js & npm</li>
-                                <li>• Python 3</li>
-                                <li>• Git</li>
-                                <li>• Docker</li>
+                                <li>• GitHub Copilot</li>
+                                <li>• Python Extensions</li>
+                                <li>• Go Extensions</li>
+                                <li>• Docker Extension</li>
+                                <li>• GitLens</li>
                             </ul>
                         </div>
                         <div class="bg-base-200 rounded-lg p-3">
@@ -195,7 +190,6 @@
         <div class="modal-action justify-between">
             <button id="tour-prev" 
                     class="btn btn-ghost"
-                    disabled
                     _="on click 
                        set currentStep to @data-step of #tour-content then 
                        decrement currentStep then
@@ -276,6 +270,7 @@
     
     on load from #tour-content
         set @data-step of me to 1
+        send showStep(step: 1) to me
     end
     
     on keydown[key=='Escape'] from window
