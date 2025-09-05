@@ -6,18 +6,22 @@ import (
 	"github.com/The-Skyscape/devtools/pkg/application"
 )
 
-// Activity represents a user activity (commits, file changes, etc)
+// Activity represents an audit log entry for user and system actions.
+// Used to track all significant events in the workbench for security
+// and debugging purposes. Activities are displayed in the dashboard
+// to provide visibility into recent operations.
 type Activity struct {
 	application.Model
-	Type        string    // commit, file_change, repo_clone, etc
-	Repository  string    // Repository name
-	Description string    // Activity description
-	Author      string    // Who performed the activity
-	Timestamp   time.Time // When it happened
-	Metadata    string    // JSON metadata for the activity
+	Type        string    // Activity type: repo_clone, repo_pull, repo_delete, auth_signin, etc.
+	Repository  string    // Repository name if applicable, empty for system activities
+	Description string    // Human-readable description of what happened
+	Author      string    // User handle or "system" for automated actions
+	Timestamp   time.Time // When the activity occurred (UTC)
+	Metadata    string    // Optional JSON data for additional context
 }
 
-// Table returns the database table name
+// Table returns the database table name for the Activity model.
+// Required by the devtools ORM for database operations.
 func (*Activity) Table() string {
 	return "activities"
 }

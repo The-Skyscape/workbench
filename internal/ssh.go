@@ -7,7 +7,10 @@ import (
 	"workbench/services"
 )
 
-// GenerateSSHKeyForUser creates a new SSH key using the configured user email
+// GenerateSSHKeyForUser creates an SSH key pair for Git authentication.
+// Uses the email from settings or defaults to "user@workbench.local".
+// This is called during application startup if no key exists.
+// The generated key persists across container restarts via volume mount.
 func GenerateSSHKeyForUser() error {
 	email, _ := models.GetSetting("git_user_email")
 	if email == "" {
@@ -18,7 +21,20 @@ func GenerateSSHKeyForUser() error {
 	return err
 }
 
-// GenerateSSHKey creates a new SSH key in the container
+// GenerateSSHKey generates an SSH key pair in the VS Code container.
+// Attempts to create an Ed25519 key first (modern, secure, fast),
+// falls back to RSA 4096-bit if Ed25519 is not supported.
+//
+// Parameters:
+//   - email: Email address to associate with the key
+//
+// The function:
+// 1. Creates ~/.ssh directory with proper permissions (700)
+// 2. Generates key without passphrase for automation
+// 3. Configures known_hosts for common Git providers
+// 4. Saves public key to database settings
+//
+// Returns the public key content for display to user.
 func GenerateSSHKey(email string) (publicKey string, err error) {
 	// First, ensure .ssh directory exists
 	if _, err := services.CoderExec("mkdir -p ~/.ssh && chmod 700 ~/.ssh"); err != nil {
@@ -56,7 +72,13 @@ func GenerateSSHKey(email string) (publicKey string, err error) {
 	return publicKey, nil
 }
 
-// GetPublicKey retrieves the current public key
+// GetPublicKey retrieves the SSH public key from the container.
+// Checks for Ed25519 key first (preferred), then RSA key.
+// The key content is suitable for adding to Git provider SSH settings.
+//
+// Returns:
+//   - Public key content (e.g., "ssh-ed25519 AAAA... email@example.com")
+//   - Error if no key exists
 func GetPublicKey() (string, error) {
 	// Try ed25519 first, then RSA
 	cmd := "cat ~/.ssh/id_ed25519.pub 2>/dev/null || cat ~/.ssh/id_rsa.pub 2>/dev/null"
@@ -68,7 +90,16 @@ func GetPublicKey() (string, error) {
 	return strings.TrimSpace(publicKey), nil
 }
 
-// ConfigureSSHHosts adds common git hosts to known_hosts
+// ConfigureSSHHosts pre-populates SSH known_hosts with common Git providers.
+// This prevents "Host key verification failed" errors during git operations.
+// Scans RSA keys from:
+//   - github.com
+//   - gitlab.com
+//   - bitbucket.org
+//   - codeberg.org
+//
+// Removes duplicate entries to keep the file clean.
+// Non-critical: failures are logged but don't stop execution.
 func ConfigureSSHHosts() error {
 	hosts := []string{
 		"github.com",
@@ -90,7 +121,9 @@ func ConfigureSSHHosts() error {
 	return err
 }
 
-// HasSSHKey checks if an SSH key exists
+// HasSSHKey checks whether an SSH key pair exists in the container.
+// Used during startup to determine if key generation is needed.
+// Returns true if either Ed25519 or RSA key is present.
 func HasSSHKey() bool {
 	_, err := GetPublicKey()
 	return err == nil

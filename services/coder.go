@@ -1,3 +1,5 @@
+// Package services manages external service integrations for the workbench.
+// Currently provides VS Code server (code-server) integration via Docker containers.
 package services
 
 import (
@@ -12,6 +14,14 @@ import (
 	"github.com/The-Skyscape/devtools/pkg/containers"
 )
 
+// Coder is the VS Code server (code-server) container configuration.
+// Provides a full VS Code IDE accessible via web browser.
+// Configuration:
+//   - No authentication (handled by workbench)
+//   - Binds to port 8080 internally
+//   - Uses host network for simplicity
+//   - Mounts persistent directories for code and config
+//   - Auto-restarts on failure
 var Coder = &containers.Service{
 	Host:          containers.Local(),
 	Name:          "workbench-coder",
@@ -20,13 +30,16 @@ var Coder = &containers.Service{
 	Network:       "host",
 	RestartPolicy: "always",
 	Mounts: map[string]string{
-		"/home/.ssh": "/home/.ssh",
-		fmt.Sprintf("%s/coder", database.DataDir()):         "/home/coder",
-		fmt.Sprintf("%s/coder/.config", database.DataDir()): "/home/coder/.config",
+		"/home/.ssh": "/home/.ssh",                                            // SSH keys for Git
+		fmt.Sprintf("%s/coder", database.DataDir()):         "/home/coder",     // Main workspace
+		fmt.Sprintf("%s/coder/.config", database.DataDir()): "/home/coder/.config", // VS Code config
 	},
 }
 
-// Init initializes and starts the coder service
+// init automatically starts the VS Code server container during package initialization.
+// Skipped during tests to avoid Docker dependencies.
+// Creates necessary directories with proper permissions and launches the container.
+// If container already exists and is running, reuses it.
 func init() {
 	// Skip initialization during tests
 	if strings.HasSuffix(os.Args[0], ".test") {
@@ -64,7 +77,16 @@ func init() {
 	log.Println("Coder service started successfully")
 }
 
-// Execute runs a command in the coder container
+// CoderExec executes a shell command inside the VS Code server container.
+// Used for Git operations, file management, and system commands.
+// Commands are run with bash -c for proper shell expansion.
+//
+// Parameters:
+//   - command: Shell command to execute
+//
+// Returns:
+//   - Command output (stdout and stderr combined)
+//   - Error if container not running or command fails
 func CoderExec(command string) (string, error) {
 	if Coder == nil {
 		return "", fmt.Errorf("coder service not initialized")
@@ -78,7 +100,10 @@ func CoderExec(command string) (string, error) {
 	return Coder.ExecInContainerWithOutput("/bin/bash", "-c", command)
 }
 
-// Proxy returns HTTP proxy to coder service
+// CoderProxy returns an HTTP reverse proxy to the VS Code server.
+// Forwards requests from /coder/* to the code-server on port 8080.
+// Used to expose VS Code through the workbench with authentication.
+// Returns error handler if service is not initialized.
 func CoderProxy() http.Handler {
 	if Coder == nil {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +115,10 @@ func CoderProxy() http.Handler {
 	return Coder.Proxy(8080)
 }
 
-// Restart restarts the coder service
+// CoderRestart performs a graceful restart of the VS Code server container.
+// Stops the container (if running) and starts it again.
+// Used when configuration changes or to recover from issues.
+// Logs all operations for debugging.
 func CoderRestart() error {
 	if Coder == nil {
 		return fmt.Errorf("coder service not initialized")

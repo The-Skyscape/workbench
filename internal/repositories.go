@@ -1,3 +1,6 @@
+// Package internal contains the business logic for the workbench application.
+// It provides repository management, SSH key handling, system monitoring,
+// activity logging, and utility functions used by controllers.
 package internal
 
 import (
@@ -8,7 +11,19 @@ import (
 	"workbench/services"
 )
 
-// CloneRepository clones a repository using git in the coder container
+// CloneRepository clones a Git repository into the VS Code server container.
+// Parameters:
+//   - url: The repository URL (HTTPS or SSH format)
+//   - name: Optional repository name (auto-detected from URL if empty)
+//
+// The function:
+// 1. Validates the repository doesn't already exist (case-insensitive)
+// 2. Creates the repos directory if needed
+// 3. Executes git clone in the container
+// 4. Saves repository metadata to the database
+// 5. Logs the activity for audit purposes
+//
+// Returns user-friendly error messages for common Git failures.
 func CloneRepository(url, name string) error {
 	if name == "" {
 		// Auto-detect name from URL
@@ -80,7 +95,20 @@ func CloneRepository(url, name string) error {
 	return nil
 }
 
-// PullRepository pulls latest changes for a repository
+// PullRepository fetches and merges latest changes from the remote repository.
+// If the local directory is missing (e.g., after container rebuild), it attempts
+// to re-clone the repository automatically.
+//
+// Parameters:
+//   - repoName: The name of the repository in the database
+//
+// Common error scenarios handled:
+//   - Missing local directory → automatic re-clone
+//   - Authentication failures → SSH key reminder
+//   - Merge conflicts → manual resolution required
+//   - Uncommitted changes → stash or commit first
+//
+// Returns detailed error messages to guide user actions.
 func PullRepository(repoName string) error {
 	repo, err := models.Repositories.Find("WHERE Name = ?", repoName)
 	if err != nil {
@@ -127,7 +155,17 @@ func PullRepository(repoName string) error {
 	return nil
 }
 
-// DeleteRepository removes a repository
+// DeleteRepository permanently removes a repository from both filesystem and database.
+// This operation cannot be undone. The function:
+// 1. Verifies the repository exists in the database
+// 2. Deletes the repository directory and all contents
+// 3. Removes the database record
+// 4. Logs the deletion for audit purposes
+//
+// Parameters:
+//   - name: The repository name to delete
+//
+// Returns error if repository not found or deletion fails.
 func DeleteRepository(name string) error {
 	repo, err := models.Repositories.Find("WHERE Name = ?", name)
 	if err != nil {
@@ -152,7 +190,16 @@ func DeleteRepository(name string) error {
 }
 
 
-// GetRepositorySize returns the size of a repository in bytes
+// GetRepositorySize calculates the total disk usage of a repository.
+// Uses the 'du' command in the container to get accurate size including
+// all files, git history, and working tree.
+//
+// Parameters:
+//   - name: The repository name
+//
+// Returns:
+//   - Size in bytes, or 0 if error
+//   - Error if repository not found or command fails
 func GetRepositorySize(name string) (int64, error) {
 	repo, err := models.Repositories.Find("WHERE Name = ?", name)
 	if err != nil {
@@ -172,7 +219,14 @@ func GetRepositorySize(name string) (int64, error) {
 	return size, nil
 }
 
-// parseRepoName extracts repository name from URL
+// parseRepoName extracts a clean repository name from various Git URL formats.
+// Handles:
+//   - HTTPS URLs: https://github.com/user/repo.git → "repo"
+//   - SSH URLs: git@github.com:user/repo.git → "repo"
+//   - URLs with or without .git extension
+//   - URLs with trailing slashes
+//
+// Returns empty string if URL is invalid or name cannot be extracted.
 func parseRepoName(url string) string {
 	// Handle empty URL
 	if url == "" {

@@ -12,7 +12,10 @@ import (
 	"github.com/The-Skyscape/devtools/pkg/authentication"
 )
 
-// Auth returns the authentication controller with single-user logic
+// Auth is a factory function that returns the controller prefix and instance.
+// It creates an authentication controller configured for single-user operation
+// with a persistent "workbench" cookie for session management.
+// The returned prefix "auth" makes controller methods available in templates as {{auth.MethodName}}.
 func Auth() (string, *AuthController) {
 	// Create the base authentication controller with workbench cookie
 	return "auth", &AuthController{
@@ -22,12 +25,24 @@ func Auth() (string, *AuthController) {
 	}
 }
 
-// AuthController wraps devtools auth with single-user logic
+// AuthController extends the devtools authentication controller with single-user logic.
+// Unlike multi-user systems, this controller:
+// - Allows only one admin user to be created
+// - Renders auth forms inline rather than redirecting
+// - Implements rate limiting on signin attempts
+// - Uses 30-day session cookies for convenience
 type AuthController struct {
 	*authentication.Controller
 }
 
-// Setup registers auth routes with custom single-user handlers
+// Setup initializes the authentication controller and registers HTTP routes.
+// Called once during application startup. It intentionally does not call
+// the parent Controller.Setup() to avoid route conflicts, instead registering
+// only the POST endpoints needed for authentication actions.
+// Routes registered:
+// - POST /_auth/signup - Create the single admin user
+// - POST /_auth/signin - Authenticate with rate limiting
+// - POST /_auth/signout - Clear session and cookie
 func (c *AuthController) Setup(app *application.App) {
 	// Setup the base controller but don't call Controller.Setup to avoid route conflicts
 	c.BaseController.Setup(app)
@@ -38,7 +53,10 @@ func (c *AuthController) Setup(app *application.App) {
 	http.HandleFunc("POST /_auth/signout", c.handleSignout)
 }
 
-// Handle prepares the controller for each request
+// Handle prepares the controller for request-specific operations.
+// Called for each HTTP request to set the request context in both
+// the AuthController and its embedded authentication.Controller.
+// This ensures template methods have access to the current request.
 func (c AuthController) Handle(req *http.Request) application.Controller {
 	// Update the request in both controllers
 	c.Request = req
@@ -46,12 +64,21 @@ func (c AuthController) Handle(req *http.Request) application.Controller {
 	return &c
 }
 
-// CurrentUser returns the current user
+// CurrentUser returns the currently authenticated user from the request context.
+// Returns nil if no user is authenticated. This method is accessible in templates
+// as {{auth.CurrentUser}} for displaying user information or conditional rendering.
 func (c *AuthController) CurrentUser() *authentication.User {
 	return c.Controller.CurrentUser()
 }
 
-// Required is an AccessCheck that ensures user is authenticated (inline rendering)
+// Required is an AccessCheck middleware that ensures a user is authenticated.
+// Unlike traditional auth middleware that redirects, this renders auth forms
+// inline for a seamless single-page experience with HTMX.
+// Flow:
+// 1. If no users exist → render signup form inline
+// 2. If not authenticated → render signin form inline
+// 3. If authenticated → allow request to proceed
+// Returns true if authenticated, false if auth form was rendered.
 func (c *AuthController) Required(app *application.App, w http.ResponseWriter, r *http.Request) bool {
 	// If no users exist, render signup inline
 	count := models.Auth.Users.Count("")
@@ -71,7 +98,11 @@ func (c *AuthController) Required(app *application.App, w http.ResponseWriter, r
 	return true
 }
 
-// handleSignup creates the single admin user
+// handleSignup handles POST /_auth/signup to create the single admin user.
+// This endpoint can only be used once - when no users exist in the system.
+// Validates all required fields, enforces password strength (min 8 chars),
+// creates the admin user, establishes a session, and sets a 30-day cookie.
+// Logs the signup activity for audit purposes.
 func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 	// Check if any users exist (prevent multiple signups)
 	count := models.Auth.Users.Count("")
@@ -136,7 +167,11 @@ func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 	c.Refresh(w, r)
 }
 
-// handleSignin authenticates the single user
+// handleSignin handles POST /_auth/signin to authenticate the admin user.
+// Implements rate limiting (5 attempts per minute per IP) to prevent brute force.
+// Accepts either email or username in the handle field for flexibility.
+// On success: creates a session, sets a 30-day cookie, and logs the activity.
+// On failure: returns generic "invalid credentials" to avoid user enumeration.
 func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
 	// Check rate limit by IP
 	clientIP := r.RemoteAddr
@@ -192,7 +227,10 @@ func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
 	c.Refresh(w, r)
 }
 
-// handleSignout clears the session
+// handleSignout handles POST /_auth/signout to end the user session.
+// Clears the authentication cookie by setting MaxAge to -1, which instructs
+// the browser to delete it immediately. The page is then refreshed via HTMX
+// to return to the signin form.
 func (c *AuthController) handleSignout(w http.ResponseWriter, r *http.Request) {
 	// Clear the auth cookie
 	http.SetCookie(w, &http.Cookie{
