@@ -28,12 +28,15 @@ func GetSetting(key string) (string, error) {
 
 // SetSetting creates or updates a setting
 func SetSetting(key, value, settingType string) error {
-	setting, err := Settings.Find("WHERE Key = ?", key)
+	settings, err := Settings.Search("WHERE Key = ? LIMIT 1", key)
+	if err != nil {
+		return err
+	}
 	
-	if err == nil && setting != nil {
+	if len(settings) > 0 {
 		// Update existing
-		setting.Value = value
-		return Settings.Update(setting)
+		settings[0].Value = value
+		return Settings.Update(settings[0])
 	}
 	
 	// Create new
