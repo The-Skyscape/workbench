@@ -1,0 +1,1 @@
+{{with monitoring.GetSystemStats}}{{.Memory.Used | monitoring.FormatBytes}} / {{.Memory.Total | monitoring.FormatBytes}}{{end}}

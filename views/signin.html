@@ -1,0 +1,48 @@
+{{template "layout/start" .}}
+
+<div class="container mx-auto px-4 py-16 max-w-md">
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body">
+            <h2 class="text-2xl font-bold text-center mb-2">Welcome Back</h2>
+            <p class="text-center text-base-content/70 mb-6">Sign in to your workbench</p>
+            
+            <div class="error-message text-center text-error mb-4"></div>
+            
+            <form hx-post="{{host}}/_auth/signin" 
+                  hx-target="previous .error-message" 
+                  hx-swap="innerHTML"
+                  class="flex flex-col gap-4">
+                
+                <!-- Handle Input -->
+                <label class="form-control w-full">
+                    <div class="label">
+                        <span class="label-text font-medium">Username or Email</span>
+                    </div>
+                    <input type="text" name="handle" class="input input-bordered w-full" 
+                           placeholder="Enter your username or email" 
+                           required 
+                           autofocus />
+                </label>
+                
+                <!-- Password Input -->
+                <label class="form-control w-full">
+                    <div class="label">
+                        <span class="label-text font-medium">Password</span>
+                    </div>
+                    <input type="password" name="password" class="input input-bordered w-full" 
+                           placeholder="••••••••" 
+                           minlength="8"
+                           required />
+                </label>
+                
+                <div class="form-control mt-4">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{template "layout/end" .}}

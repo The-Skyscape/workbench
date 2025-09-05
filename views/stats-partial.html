@@ -1,0 +1,43 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- CPU Card -->
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body">
+            <h3 class="card-title text-lg">CPU Usage</h3>
+            <div class="flex flex-col gap-2">
+                <div class="text-3xl font-bold">{{printf "%.1f" monitoring.GetCPUUsage}}%</div>
+                <progress class="progress progress-primary" value="{{monitoring.GetCPUUsage}}" max="100"></progress>
+                <div class="text-sm text-base-content/70">
+                    Load: {{monitoring.GetLoadAverage}} • {{with monitoring.GetSystemInfo}}{{.NumCPU}} cores{{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memory Card -->
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body">
+            <h3 class="card-title text-lg">Memory</h3>
+            <div class="flex flex-col gap-2">
+                <div class="text-3xl font-bold">{{printf "%.1f" monitoring.GetMemoryUsage}}%</div>
+                <progress class="progress progress-secondary" value="{{monitoring.GetMemoryUsage}}" max="100"></progress>
+                <div class="text-sm text-base-content/70">
+                    {{template "memory-data.html" .}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disk Card -->
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body">
+            <h3 class="card-title text-lg">Disk Usage</h3>
+            <div class="flex flex-col gap-2">
+                <div class="text-3xl font-bold">{{printf "%.1f" monitoring.GetDiskUsage}}%</div>
+                <progress class="progress progress-accent" value="{{monitoring.GetDiskUsage}}" max="100"></progress>
+                <div class="text-sm text-base-content/70">
+                    {{template "disk-data.html" .}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

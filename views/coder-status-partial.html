@@ -1,0 +1,57 @@
+<div class="overflow-x-auto">
+    <table class="table table-zebra">
+        <thead>
+            <tr>
+                <th>Container</th>
+                <th>Status</th>
+                <th>Port</th>
+                <th>Memory</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                        <div>
+                            <div class="font-bold">code-server</div>
+                            <div class="text-sm opacity-50">VS Code Server</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {{if workbench.IsCoderRunning}}
+                        <span class="badge badge-soft badge-success gap-2">
+                            Running
+                        </span>
+                    {{else}}
+                        <span class="badge badge-soft badge-warning gap-2">
+                            <span class="loading loading-spinner loading-xs"></span>
+                            Starting
+                        </span>
+                    {{end}}
+                </td>
+                <td>
+                    <span class="font-mono text-sm">8443</span>
+                </td>
+                <td>
+                    <span class="font-mono text-sm">512MB</span>
+                </td>
+                <td>
+                    {{if workbench.IsCoderRunning}}
+                        <a href="{{host}}/coder/" target="_blank" class="btn btn-soft btn-primary btn-sm">
+                            Open IDE
+                        </a>
+                    {{else}}
+                        <button class="btn btn-ghost btn-sm btn-disabled">
+                            Waiting...
+                        </button>
+                    {{end}}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

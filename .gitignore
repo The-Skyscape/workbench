@@ -1,0 +1,48 @@
+# Binary
+/workbench
+/app
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# Go build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Dependency directories
+vendor/
+
+# IDE files
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+
+# Log files
+*.log
+
+# Test coverage
+*.coverprofile
+coverage.txt
+coverage.html

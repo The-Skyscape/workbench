@@ -1,0 +1,80 @@
+{{template "layout/start" .}}
+
+<div class="container mx-auto px-4 py-16 max-w-md">
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body">
+            <h2 class="text-2xl font-bold text-center mb-2">Create Account</h2>
+            <p class="text-center text-base-content/70 mb-6">Set up your personal workbench</p>
+            
+            <div class="error-message text-center text-error mb-4"></div>
+            
+            <form hx-post="{{host}}/_auth/signup" 
+                  hx-target="previous .error-message" 
+                  hx-swap="innerHTML"
+                  class="flex flex-col gap-4">
+                
+                <!-- Name Input -->
+                <label class="form-control w-full">
+                    <div class="label">
+                        <span class="label-text font-medium">Full Name</span>
+                    </div>
+                    <input type="text" name="name" class="input input-bordered w-full" 
+                           placeholder="John Doe" 
+                           required 
+                           autofocus />
+                </label>
+                
+                <!-- Username Input -->
+                <label class="form-control w-full">
+                    <div class="label">
+                        <span class="label-text font-medium">Username</span>
+                    </div>
+                    <input type="text" name="handle" class="input input-bordered w-full" 
+                           placeholder="johndoe" 
+                           pattern="[a-zA-Z0-9_-]+"
+                           title="Username can only contain letters, numbers, underscores, and hyphens"
+                           required />
+                </label>
+                
+                <!-- Email Input -->
+                <label class="form-control w-full">
+                    <div class="label">
+                        <span class="label-text font-medium">Email Address</span>
+                    </div>
+                    <input type="email" name="email" class="input input-bordered w-full" 
+                           placeholder="john@example.com" 
+                           required />
+                </label>
+                
+                <!-- Password Input -->
+                <label class="form-control w-full">
+                    <div class="label">
+                        <span class="label-text font-medium">Password</span>
+                        <span class="label-text-alt text-xs">Minimum 8 characters</span>
+                    </div>
+                    <input type="password" name="password" class="input input-bordered w-full" 
+                           placeholder="••••••••" 
+                           minlength="8"
+                           required />
+                </label>
+                
+                <div class="form-control mt-4">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Create Account
+                    </button>
+                </div>
+            </form>
+            
+            <div class="divider my-6">Note</div>
+            
+            <div class="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-sm">Workbench is a single-user system. Only one account can be created.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "layout/end" .}}

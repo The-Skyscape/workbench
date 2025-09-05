@@ -1,0 +1,72 @@
+{{define "partials/clone-repo-modal"}}
+<dialog id="clone_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Clone Repository</h3>
+        <p class="text-base-content/70 text-sm mb-4">Bring along your code wherever it may be</p>
+        <form hx-post="{{host}}/repos/clone" hx-target="#clone-error" hx-swap="innerHTML" class="flex flex-col gap-2">
+            <div id="clone-error" class="error-message"></div>
+            
+            <label class="form-control w-full">
+                <div class="label">
+                    <span class="label-text text-sm font-medium">Repository URL</span>
+                    <span class="label-text-alt text-xs">HTTPS or SSH</span>
+                </div>
+                <input type="url" name="url" placeholder="https://github.com/user/repo.git" class="input input-bordered w-full" required />
+            </label>
+
+            <label class="form-control w-full">
+                <div class="label">
+                    <span class="label-text text-sm font-medium">Repository Name</span>
+                    <span class="label-text-alt text-xs">Optional</span>
+                </div>
+                <input type="text" name="name" placeholder="my-repo" class="input input-bordered w-full" />
+            </label>
+
+            <div class="modal-action">
+                <button type="button" 
+                        class="btn"
+                        data-ssh-key="{{workbench.GetPublicKey}}"
+                        _="on click 
+                           set key to my @data-ssh-key
+                           if key is not empty
+                             call navigator.clipboard.writeText(key) then 
+                             set my textContent to 'Copied ✓' then 
+                             add .btn-success to me then 
+                             remove .btn-neutral from me then
+                             wait 2s then 
+                             set my textContent to 'Copy Public Key' then 
+                             remove .btn-success from me then 
+                             add .btn-neutral to me
+                           else
+                             set my textContent to 'No SSH Key' then
+                             add .btn-error to me then
+                             wait 2s then
+                             set my textContent to 'Copy Public Key' then
+                             remove .btn-error from me
+                           end">
+                    Copy Public Key
+                </button>
+                <button type="submit" class="btn btn-primary">Clone Repository</button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
+<script>
+// Close modal on successful clone
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.xhr.status === 200 && evt.detail.elt.closest('#clone_modal')) {
+        if (!evt.detail.xhr.responseText.includes('error')) {
+            clone_modal.close();
+            // Clear form
+            evt.detail.elt.reset();
+            // Refresh page to show new repo
+            window.location.reload();
+        }
+    }
+});
+</script>
+{{end}}
