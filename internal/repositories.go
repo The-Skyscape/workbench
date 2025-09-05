@@ -14,12 +14,22 @@ func CloneRepository(url, name string) error {
 		// Auto-detect name from URL
 		name = parseRepoName(url)
 	}
+	
+	// Log for debugging
+	Log.Info("Attempting to clone repository: URL=%s, Name=%s", url, name)
 
-	// Check if repository already exists
-	existing, _ := models.Repositories.Find("WHERE Name = ?", name)
-	if existing != nil {
-		return fmt.Errorf("a repository named '%s' already exists", name)
+	// Validate name is not empty
+	if name == "" {
+		return fmt.Errorf("repository name cannot be empty")
 	}
+	
+	// Check if repository already exists (case-insensitive)
+	existing, err := models.Repositories.Find("WHERE LOWER(Name) = LOWER(?)", name)
+	if err == nil && existing != nil && existing.Name != "" {
+		Log.Warn("Repository already exists in database: %s (found: %s)", name, existing.Name)
+		return fmt.Errorf("a repository named '%s' already exists", existing.Name)
+	}
+	Log.Debug("No existing repository found for name: %s (err: %v)", name, err)
 
 	// Ensure repos directory exists
 	services.CoderExec("mkdir -p /home/coder/repos")
@@ -166,10 +176,12 @@ func GetRepositorySize(name string) (int64, error) {
 func parseRepoName(url string) string {
 	// Handle empty URL
 	if url == "" {
-		return "repository"
+		return ""
 	}
 	
-	// Remove .git suffix if present
+	// Clean up the URL
+	url = strings.TrimSpace(url)
+	url = strings.TrimSuffix(url, "/")  // Remove trailing slash
 	url = strings.TrimSuffix(url, ".git")
 
 	// Handle SSH URLs (git@github.com:user/repo)
@@ -182,6 +194,7 @@ func parseRepoName(url string) string {
 				return parts[len(parts)-1]
 			}
 		}
+		return ""
 	}
 
 	// Handle HTTPS URLs
@@ -190,5 +203,5 @@ func parseRepoName(url string) string {
 		return parts[len(parts)-1]
 	}
 
-	return "repository"
+	return ""
 }

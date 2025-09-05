@@ -3,6 +3,7 @@ package controllers
 import (
 	"log"
 	"net/http"
+	"time"
 	"workbench/internal"
 	"workbench/models"
 	"workbench/services"
@@ -33,6 +34,9 @@ func (c *WorkbenchController) Setup(app *application.App) {
 	http.Handle("POST /repos/clone", app.ProtectFunc(c.cloneRepo, auth.Required))
 	http.Handle("POST /repos/pull/{name}", app.ProtectFunc(c.pullRepo, auth.Required))
 	http.Handle("POST /repos/delete/{name}", app.ProtectFunc(c.deleteRepo, auth.Required))
+	
+	// Partial routes for HTMX lazy loading
+	http.Handle("GET /partials/activity", app.Serve("activity-log.html", auth.Required))
 
 	// Coder proxy route
 	http.Handle("/coder/", http.StripPrefix("/coder/", app.Protect(services.CoderProxy(), auth.Required)))
@@ -158,4 +162,9 @@ func (c *WorkbenchController) GetPublicKey() string {
 		return ""
 	}
 	return key
+}
+
+// FormatActivityTime formats activity time in user's timezone
+func (c *WorkbenchController) FormatActivityTime(t time.Time) string {
+	return internal.FormatTimeInUserTZ(t, c.Request)
 }

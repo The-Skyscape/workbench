@@ -19,7 +19,12 @@ func TestParseRepoName(t *testing.T) {
 		{"git@bitbucket.org:team/project.git", "project"},
 		{"https://example.com/path/to/repo.git", "repo"},
 		{"invalid-url", "invalid-url"},
-		{"", "repository"},
+		{"", ""},
+		{"https://github.com/", "github.com"},
+		{"https://github.com", "github.com"},
+		{"https://github.com/user/repo/", "repo"},
+		{"/", ""},
+		{"https://", ""},
 	}
 	
 	for _, tc := range testCases {

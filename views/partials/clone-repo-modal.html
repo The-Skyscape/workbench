@@ -6,6 +6,7 @@
         <form hx-post="{{host}}/repos/clone" 
               hx-target="#clone-error" 
               hx-swap="innerHTML"
+              hx-indicator="#clone-indicator"
               class="flex flex-col gap-2">
             <div id="clone-error" class="error-message"></div>
             
@@ -49,13 +50,10 @@
                            end">
                     Copy Public Key
                 </button>
-                <button type="submit" class="btn btn-primary"
-                        _="on htmx:beforeRequest 
-                           set my innerHTML to '<span class=loading loading-spinner loading-xs></span> Cloning...' then
-                           add @disabled to me
-                           on htmx:afterRequest
-                           set my innerHTML to 'Clone Repository' then
-                           remove @disabled from me">Clone Repository</button>
+                <button type="submit" class="btn btn-primary">
+                    Clone Repository
+                    <span id="clone-indicator" class="htmx-indicator loading loading-spinner loading-xs ml-2"></span>
+                </button>
             </div>
         </form>
     </div>
