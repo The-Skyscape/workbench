@@ -242,13 +242,15 @@
         set @data-step of #tour-content to step
         
         add .hidden to .step-content
-        remove .hidden from #tour-step-{step}
+        set stepId to 'tour-step-' + step
+        remove .hidden from #{stepId}
         
         for i in [1, 2, 3, 4]
+            set indicatorId to 'step-indicator-' + i
             if i <= step
-                add .step-primary to #step-indicator-{i}
+                add .step-primary to #{indicatorId}
             else
-                remove .step-primary from #step-indicator-{i}
+                remove .step-primary from #{indicatorId}
             end
         end
         
