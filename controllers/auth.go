@@ -129,7 +129,7 @@ func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(time.Hour * 24 * 30), // 30 days for workbench
 		HttpOnly: true,
-		Secure:   r.Proto == "https",
+		Secure:   r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https",
 	})
 
 	// Refresh the page - HTMX will reload
@@ -185,7 +185,7 @@ func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(time.Hour * 24 * 30), // 30 days for workbench
 		HttpOnly: true,
-		Secure:   r.Proto == "https",
+		Secure:   r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https",
 	})
 
 	// Refresh the page - HTMX will reload
@@ -201,7 +201,7 @@ func (c *AuthController) handleSignout(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   r.Proto == "https",
+		Secure:   r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https",
 	})
 
 	// Refresh the page

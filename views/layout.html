@@ -7,13 +7,15 @@
     {{template "app-deps" .}}
     <script>
         // Configure HTMX to send timezone header with all requests
-        document.addEventListener('DOMContentLoaded', function() {
+        // Set up immediately, not waiting for DOM
+        (function() {
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             
-            document.body.addEventListener('htmx:configRequest', function(evt) {
+            // Use htmx:configRequest event on document since body might not exist yet
+            document.addEventListener('htmx:configRequest', function(evt) {
                 evt.detail.headers['X-User-Timezone'] = timezone;
             });
-        });
+        })();
     </script>
     <script src="{{host}}/public/clock.js"></script>
 </head>

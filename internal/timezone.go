@@ -9,12 +9,14 @@ import (
 func GetUserTimezone(r *http.Request) *time.Location {
 	tzHeader := r.Header.Get("X-User-Timezone")
 	if tzHeader == "" {
+		Log.Debug("No timezone header provided, using UTC")
 		return time.UTC // Default to UTC if no timezone provided
 	}
 	
+	Log.Debug("Timezone header received: %s", tzHeader)
 	loc, err := time.LoadLocation(tzHeader)
 	if err != nil {
-		Log.Debug("Invalid timezone %s: %v", tzHeader, err)
+		Log.Warn("Invalid timezone %s: %v", tzHeader, err)
 		return time.UTC
 	}
 	

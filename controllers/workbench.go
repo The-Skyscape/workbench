@@ -34,7 +34,7 @@ func (c *WorkbenchController) Setup(app *application.App) {
 	http.Handle("POST /repos/clone", app.ProtectFunc(c.cloneRepo, auth.Required))
 	http.Handle("POST /repos/pull/{name}", app.ProtectFunc(c.pullRepo, auth.Required))
 	http.Handle("POST /repos/delete/{name}", app.ProtectFunc(c.deleteRepo, auth.Required))
-	
+
 	// Partial routes for HTMX lazy loading
 	http.Handle("GET /partials/activity", app.Serve("activity-log.html", auth.Required))
 
@@ -128,9 +128,9 @@ func (c *WorkbenchController) GetRecentActivity() []*models.Activity {
 	return activities
 }
 
-// GetRepositories returns all repositories (for templates)
+// GetRepositories returns all repositories ordered by name (for templates)
 func (c *WorkbenchController) GetRepositories() []*models.Repository {
-	repos, _ := models.Repositories.Search("")
+	repos, _ := models.Repositories.Search("ORDER BY Name ASC")
 	return repos
 }
 
@@ -143,16 +143,6 @@ func (c *WorkbenchController) HasRepositories() bool {
 // IsCoderRunning checks if coder is running
 func (c *WorkbenchController) IsCoderRunning() bool {
 	return services.Coder.IsRunning()
-}
-
-// AppName returns the application name for templates
-func (c *WorkbenchController) AppName() string {
-	return "Workbench"
-}
-
-// AppDescription returns the application description for templates
-func (c *WorkbenchController) AppDescription() string {
-	return "Personal development environment with integrated VS Code"
 }
 
 // GetPublicKey returns the SSH public key for templates
