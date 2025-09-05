@@ -247,7 +247,7 @@
         
         for i in [1, 2, 3, 4]
             set indicatorId to 'step-indicator-' + i
-            if i <= step
+            if step >= i
                 add .step-primary to #{indicatorId}
             else
                 remove .step-primary from #{indicatorId}
