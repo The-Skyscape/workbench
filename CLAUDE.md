@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## Project Overview
 
-This is a **workbench** application built with TheSkyscape DevTools - a Go-based web application framework with built-in authentication, database management, and HTMX-powered UI.
+**Skyscape Workbench** - A personal development environment that provides developers with a persistent, cloud-based workspace featuring integrated VS Code, repository management, and system monitoring. Built with TheSkyscape DevTools framework.
+
+## License
+
+**AGPL-3.0** - This project uses Coder (code-server) which requires AGPL licensing. All modifications must be open-sourced if deployed as a service.
 
 ## Architecture
 
@@ -13,17 +17,32 @@ This application follows the TheSkyscape DevTools MVC pattern:
 ### Core Structure
 
 - **`controllers/`** - HTTP handlers with factory functions and Setup/Handle methods
-- **`models/`** - Database models with Table() methods and global repository setup
-- **`views/`** - HTML templates with HTMX integration and DaisyUI styling
+  - `auth.go` - Single-user authentication with inline rendering
+  - `workbench.go` - Main dashboard, repository management, SSH key handling
+  - `monitoring.go` - System monitoring and stats
+- **`models/`** - Database models with optimized queries
+  - `repository.go` - Git repository tracking
+  - `activity.go` - User activity logging
+  - `settings.go` - Key-value settings store
+- **`internal/`** - Business logic
+  - `repositories.go` - Git operations (clone, pull, delete)
+  - `ssh.go` - SSH key generation and management
+  - `monitoring.go` - System stats with DataDir disk monitoring
+  - `activity.go` - Activity logging helpers
+- **`services/`** - External service integrations
+  - `coder.go` - VS Code server management
+- **`views/`** - HTML templates with HTMX and DaisyUI
 - **`main.go`** - Application entry point with embedded views
 
-### Key Design Patterns
+### Key Features
 
-- **Controller Factory Functions**: Return `(string, *Controller)` for registration
-- **Global Database Setup**: DB, Auth, and repositories initialized in `models/database.go`
-- **Template Naming**: Use unique filenames (not paths) for template rendering
-- **HTMX Integration**: Dynamic updates with `c.Refresh(w, r)` after form submissions
-- **Authentication**: JWT-based with `models.Auth.Required` middleware
+1. **Single-User System** - No multi-user support, one admin account
+2. **Inline Authentication** - Auth pages render inline, no separate routes
+3. **Repository Management** - Clone, sync, and manage Git repositories
+4. **VS Code Integration** - Full IDE through code-server
+5. **System Monitoring** - CPU, Memory, and DataDir disk usage
+6. **Activity Tracking** - Logs all user and system actions
+7. **SSH Key Management** - Auto-generates and manages SSH keys
 
 ## Development Commands
 
@@ -36,20 +55,28 @@ export AUTH_SECRET="your-super-secret-jwt-key"
 go run .
 
 # Build for production
-go build -o app
+go build -o workbench
 ```
 
 ### Testing
 ```bash
+# Run all tests
 go test ./...
-go test -v ./controllers
-go test -race ./models
+
+# Run internal package tests
+go test ./internal/...
 ```
 
-### Dependencies
+### Deployment
 ```bash
-go mod tidy
-go mod download
+# Build
+go build -o workbench
+
+# Deploy using launch-app
+cd /home/coder/skyscape
+./devtools/build/launch-app deploy \
+  --name workbench-test-env \
+  --binary workbench/workbench
 ```
 
 ## Environment Variables
@@ -59,101 +86,108 @@ go mod download
 
 ### Optional
 - `PORT` - Server port (default: 5000)
-- `THEME` - DaisyUI theme (default: corporate)
-- `CONGO_SSL_FULLCHAIN` - SSL certificate path
-- `CONGO_SSL_PRIVKEY` - SSL private key path
+- `SSL_FULLCHAIN` - SSL certificate path
+- `SSL_PRIVKEY` - SSL private key path
 
-## Application Patterns
+## Database Patterns
 
-### Controller Pattern
-Controllers should:
-1. Implement factory function returning `(string, *ControllerType)`
-2. Embed `application.BaseController`
-3. Implement `Setup(app *App)` to register routes
-4. Implement `Handle(r *Request) Controller` returning instance
-5. Use public methods for template access (e.g., `AllTodos()`)
-6. Use private methods for HTTP handlers (e.g., `createTodo()`)
-
-### Model Pattern
-Models should:
-1. Embed `application.Model` for ID, CreatedAt, UpdatedAt
-2. Implement `Table() string` method
-3. Use global repositories from `models/database.go`
-4. Keep business logic in model methods
-
-### Template Pattern
-Templates should:
-1. Use unique filenames to avoid namespace conflicts
-2. Access controllers as `{{controllerName.Method}}`
-3. Use layout components: `{{template "layout/start"}}`/ `{{template "layout/end"}}` 
-4. Include HTMX attributes for dynamic behavior
-5. Use DaisyUI classes for styling
-
-## Error Handling
-
-Use consistent error patterns:
+### Optimized Query Patterns
 ```go
-// In controllers, render errors using error template
-c.Render(w, r, "error-message.html", errors.New("something went wrong"))
+// Use Find() for single records
+setting, err := models.Settings.Find("WHERE Key = ?", key)
 
-// Use c.Refresh(w, r) after successful operations for HTMX updates
+// Use Count() for existence checks
+count := models.Repositories.Count("")
+if count > 0 { ... }
+
+// Use Search() for multiple records
+activities, err := models.Activities.Search("ORDER BY CreatedAt DESC LIMIT 20")
+```
+
+### Model Methods
+Models are kept simple with just fields and Table() method. Business logic lives in controllers or internal packages.
+
+## Template Patterns
+
+### Controller Access
+```html
+<!-- Access controller methods -->
+{{workbench.GetRepositories}}
+{{monitoring.GetDataDirStats}}
+{{auth.CurrentUser}}
+```
+
+### HTMX Patterns
+```html
+<!-- Forms use HTMX for dynamic updates -->
+<form hx-post="/repos/clone" hx-swap="none">
+
+<!-- Auto-refresh monitoring -->
+<div hx-get="/partials/stats" hx-trigger="every 10s" hx-swap="innerHTML">
 ```
 
 ## Security
 
-- **Authentication**: Routes protected with `app.ProtectFunc()` and `models.Auth.Required`
+- **Authentication**: JWT-based with secure cookies
+- **Single-User**: Simplified security model, one admin
+- **SSH Keys**: Stored in ~/.ssh within container
 - **Passwords**: Automatically hashed with bcrypt
-- **Sessions**: JWT tokens with secure cookie settings
-- **Environment**: Never commit `AUTH_SECRET` to git
+- **CSRF**: Protected via HTMX same-origin
 
-## Database
+## Monitoring
 
-- **Type**: SQLite3 with automatic table creation
-- **Repositories**: Type-safe with Go generics
-- **Queries**: Dynamic ORM with `Search()`, `Get()`, `Insert()`, `Update()`, `Delete()`
+The application monitors:
+- **CPU Usage** - System-wide CPU percentage
+- **Memory** - System-wide RAM usage  
+- **Data Storage** - Persistent DataDir disk usage (NOT system disk)
+  - This shows only what persists between deployments
+  - Located at `~/.skyscape/` or similar
+  - Includes repositories, database, settings
 
-## Integration Points
+## Testing Infrastructure
 
-- **HTMX**: All forms use HTMX for dynamic updates
-- **DaisyUI**: Complete component library with theme support
-- **Authentication**: Built-in signin/signup/signout flows
-- **File System**: Views embedded at build time with `//go:embed all:views`
+Tests use the devtools testutils package:
+```go
+// Test files exist for internal package
+internal/monitoring_test.go - System monitoring tests
+internal/repositories_test.go - Repository operations tests
+
+// Run tests (skip Docker-dependent tests in CI)
+go test ./internal/...
+```
+
+Note: Database-dependent tests are skipped until testutils supports test databases.
 
 ## Common Development Tasks
 
-### Adding New Models
-1. Create model in `models/newmodel.go`
-2. Add repository to `models/database.go`
-3. Create controller in `controllers/newmodels.go`
-4. Register controller in `main.go`
-5. Create templates in `views/`
+### Adding New Features
+1. Add model if needed in `models/`
+2. Add business logic in `internal/`
+3. Add controller methods in `controllers/`
+4. Create/update templates in `views/`
 
-### Adding Routes
-```go
-// In controller Setup method
-app.Serve("GET /path", "template.html", models.Auth.Required)
-app.ProtectFunc("POST /path", c.handler, models.Auth.Required)
-```
-
-### Template Helpers
-- `{{theme}}` - Current DaisyUI theme
-- `{{host}}` - Host prefix for URLs
-- `{{auth.CurrentUser}}` - Current user
-- `{{auth.SigninURL}}`, `{{auth.SignupURL}}` - Auth URLs
-
-## Deployment
-
-Build and deploy using launch-app:
+### Debugging Issues
 ```bash
-go build -o app
-curl -L -o launch-app https://github.com/The-Skyscape/devtools/releases/download/v1.0.1/launch-app
-chmod +x launch-app
-export DIGITAL_OCEAN_API_KEY="your-token"
-./launch-app --name workbench --domain workbench.example.com --binary ./app
+# Check server logs
+ssh root@SERVER_IP "docker logs sky-app --tail 50"
+
+# Check database
+ssh root@SERVER_IP 'sqlite3 ~/.skyscape/workbench.db "SELECT * FROM repositories;"'
+
+# Restart application
+ssh root@SERVER_IP "docker restart sky-app"
 ```
 
-## Framework Documentation
+## Git Repository
 
-- **DevTools Repository**: https://github.com/The-Skyscape/devtools
-- **Tutorial**: https://github.com/The-Skyscape/devtools/blob/main/docs/tutorial.md
-- **API Reference**: https://github.com/The-Skyscape/devtools/blob/main/docs/api.md
+- **Source**: https://github.com/The-Skyscape/workbench
+- **License**: AGPL-3.0 (required due to Coder dependency)
+- **Deployment**: https://test-bench.theskyscape.com
+
+## Important Notes
+
+1. **License Compliance**: Must remain AGPL-3.0 due to Coder usage
+2. **Single User Only**: No multi-tenancy support by design
+3. **DataDir Monitoring**: Disk usage shows persistent data only
+4. **Test Mode**: Services skip initialization when running tests
+5. **Activity Logging**: All actions are logged for audit trail
