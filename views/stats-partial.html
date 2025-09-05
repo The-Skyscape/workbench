@@ -27,16 +27,18 @@
         </div>
     </div>
 
-    <!-- Disk Card -->
+    <!-- Data Directory Card -->
     <div class="card bg-base-100 shadow-sm border border-base-300">
         <div class="card-body">
-            <h3 class="card-title text-lg">Disk Usage</h3>
+            <h3 class="card-title text-lg">Data Storage</h3>
             <div class="flex flex-col gap-2">
-                <div class="text-3xl font-bold">{{printf "%.1f" monitoring.GetDiskUsage}}%</div>
-                <progress class="progress progress-accent" value="{{monitoring.GetDiskUsage}}" max="100"></progress>
+                {{with monitoring.GetDataDirStats}}
+                <div class="text-3xl font-bold">{{printf "%.1f" .UsedPercent}}%</div>
+                <progress class="progress progress-accent" value="{{.UsedPercent}}" max="100"></progress>
                 <div class="text-sm text-base-content/70">
-                    {{template "disk-data.html" .}}
+                    {{.Used | monitoring.FormatBytes}} / {{.Total | monitoring.FormatBytes}}
                 </div>
+                {{end}}
             </div>
         </div>
     </div>

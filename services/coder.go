@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/The-Skyscape/devtools/pkg/database"
 
@@ -26,6 +28,11 @@ var Coder = &containers.Service{
 
 // Init initializes and starts the coder service
 func init() {
+	// Skip initialization during tests
+	if strings.HasSuffix(os.Args[0], ".test") {
+		return
+	}
+	
 	log.Println("Initializing Coder service...")
 
 	// Check if container already exists

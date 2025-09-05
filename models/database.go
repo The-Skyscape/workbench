@@ -18,3 +18,12 @@ var (
 	Activities   = database.Manage(DB, new(Activity))
 	Settings     = database.Manage(DB, new(Setting))
 )
+
+// InitializeForTesting reinitializes the global repositories with a test database
+func InitializeForTesting(testDB *database.DynamicDB) {
+	DB = testDB
+	Auth = authentication.Manage(testDB)
+	Repositories = database.Manage(testDB, new(Repository))
+	Activities = database.Manage(testDB, new(Activity))
+	Settings = database.Manage(testDB, new(Setting))
+}

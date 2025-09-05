@@ -27,7 +27,7 @@ func (c *WorkbenchController) Setup(app *application.App) {
 	auth := app.Use("auth").(*AuthController)
 
 	// Dashboard route
-	http.Handle("GET /", app.Serve("dashboard.html", auth.Required))
+	http.Handle("/", app.Serve("dashboard.html", auth.Required))
 
 	// Repository API routes (for dashboard)
 	http.Handle("POST /repos/clone", app.ProtectFunc(c.cloneRepo, auth.Required))
@@ -124,7 +124,6 @@ func (c *WorkbenchController) GetRecentActivity() []*models.Activity {
 	return activities
 }
 
-
 // GetRepositories returns all repositories (for templates)
 func (c *WorkbenchController) GetRepositories() []*models.Repository {
 	repos, _ := models.Repositories.Search("")
@@ -133,8 +132,8 @@ func (c *WorkbenchController) GetRepositories() []*models.Repository {
 
 // HasRepositories checks if any repositories exist
 func (c *WorkbenchController) HasRepositories() bool {
-	repos, _ := models.Repositories.Search("")
-	return len(repos) > 0
+	count := models.Repositories.Count("")
+	return count > 0
 }
 
 // IsCoderRunning checks if coder is running

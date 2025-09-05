@@ -54,7 +54,8 @@ func (c *AuthController) CurrentUser() *authentication.User {
 // Required is an AccessCheck that ensures user is authenticated (inline rendering)
 func (c *AuthController) Required(app *application.App, w http.ResponseWriter, r *http.Request) bool {
 	// If no users exist, render signup inline
-	if users, _ := models.Auth.Users.Search(""); len(users) == 0 {
+	count := models.Auth.Users.Count("")
+	if count == 0 {
 		c.Render(w, r, "signup.html", nil)
 		return false
 	}
@@ -73,8 +74,8 @@ func (c *AuthController) Required(app *application.App, w http.ResponseWriter, r
 // handleSignup creates the single admin user
 func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 	// Check if any users exist (prevent multiple signups)
-	users, _ := models.Auth.Users.Search("")
-	if len(users) > 0 {
+	count := models.Auth.Users.Count("")
+	if count > 0 {
 		c.Render(w, r, "error-message.html", errors.New("a user already exists"))
 		return
 	}

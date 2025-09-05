@@ -3,8 +3,9 @@ package internal
 import (
 	"fmt"
 	"runtime"
-	"time"
+	"syscall"
 
+	"github.com/The-Skyscape/devtools/pkg/database"
 	"github.com/The-Skyscape/devtools/pkg/monitoring"
 )
 
@@ -88,55 +89,45 @@ func FormatBytes(bytes uint64) string {
 	return fmt.Sprintf("%.1f %s", float64(bytes)/float64(div), units[exp])
 }
 
-// GetUptime returns system uptime as a formatted string
-func GetUptime() string {
-	stats, _ := monitoring.NewCollector(false, 1).GetCurrent()
-	if stats == nil {
-		return "unknown"
-	}
-
-	uptime := time.Since(stats.Timestamp)
-	days := int(uptime.Hours() / 24)
-	hours := int(uptime.Hours()) % 24
-	minutes := int(uptime.Minutes()) % 60
-
-	if days > 0 {
-		return string(rune(days)) + "d " + string(rune(hours)) + "h " + string(rune(minutes)) + "m"
-	} else if hours > 0 {
-		return string(rune(hours)) + "h " + string(rune(minutes)) + "m"
-	}
-	return string(rune(minutes)) + "m"
+// DataDirStats represents disk usage statistics for the data directory
+type DataDirStats struct {
+	Path        string
+	Total       uint64
+	Used        uint64
+	Free        uint64
+	UsedPercent float64
 }
 
-// GetHealthStatus returns a simple health status based on resource usage
-func GetHealthStatus(stats *monitoring.SystemStats) string {
-	if stats == nil {
-		return "unknown"
+// GetDataDirStats returns disk usage statistics for the persistent data directory
+func GetDataDirStats() *DataDirStats {
+	dataDir := database.DataDir()
+	
+	var stat syscall.Statfs_t
+	err := syscall.Statfs(dataDir, &stat)
+	if err != nil {
+		// Return empty stats on error
+		return &DataDirStats{
+			Path: dataDir,
+		}
 	}
-
-	// Check critical thresholds
-	if stats.CPU.UsagePercent > 90 || stats.Memory.UsedPercent > 90 || stats.Disk.UsedPercent > 90 {
-		return "critical"
+	
+	// Calculate sizes in bytes
+	total := stat.Blocks * uint64(stat.Bsize)
+	free := stat.Bavail * uint64(stat.Bsize)
+	used := total - free
+	
+	usedPercent := 0.0
+	if total > 0 {
+		usedPercent = float64(used) / float64(total) * 100.0
 	}
-
-	// Check warning thresholds
-	if stats.CPU.UsagePercent > 70 || stats.Memory.UsedPercent > 70 || stats.Disk.UsedPercent > 80 {
-		return "warning"
+	
+	return &DataDirStats{
+		Path:        dataDir,
+		Total:       total,
+		Used:        used,
+		Free:        free,
+		UsedPercent: usedPercent,
 	}
-
-	return "healthy"
 }
 
-// GetHealthBadgeClass returns the badge class for health status
-func GetHealthBadgeClass(status string) string {
-	switch status {
-	case "critical":
-		return "badge badge-error"
-	case "warning":
-		return "badge badge-warning"
-	case "healthy":
-		return "badge badge-success"
-	default:
-		return "badge badge-ghost"
-	}
-}
+

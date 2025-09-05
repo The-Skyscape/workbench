@@ -58,12 +58,10 @@ func CloneRepository(url, name string) error {
 
 // PullRepository pulls latest changes for a repository
 func PullRepository(repoName string) error {
-	repos, err := models.Repositories.Search("WHERE Name = ?", repoName)
-	if err != nil || len(repos) == 0 {
+	repo, err := models.Repositories.Find("WHERE Name = ?", repoName)
+	if err != nil {
 		return fmt.Errorf("repository not found: %s", repoName)
 	}
-
-	repo := repos[0]
 	cmd := fmt.Sprintf("cd %s && git pull", repo.LocalPath)
 	output, err := services.CoderExec(cmd)
 	if err != nil {
@@ -107,6 +105,11 @@ func DeleteRepository(name string) error {
 
 // parseRepoName extracts repository name from URL
 func parseRepoName(url string) string {
+	// Handle empty URL
+	if url == "" {
+		return "repository"
+	}
+	
 	// Remove .git suffix if present
 	url = strings.TrimSuffix(url, ".git")
 
@@ -116,13 +119,15 @@ func parseRepoName(url string) string {
 		if len(parts) > 1 {
 			path := parts[1]
 			parts = strings.Split(path, "/")
-			return parts[len(parts)-1]
+			if len(parts) > 0 && parts[len(parts)-1] != "" {
+				return parts[len(parts)-1]
+			}
 		}
 	}
 
 	// Handle HTTPS URLs
 	parts := strings.Split(url, "/")
-	if len(parts) > 0 {
+	if len(parts) > 0 && parts[len(parts)-1] != "" {
 		return parts[len(parts)-1]
 	}
 

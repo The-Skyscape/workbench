@@ -19,25 +19,25 @@ func (*Setting) Table() string {
 
 // GetSetting retrieves a setting by key
 func GetSetting(key string) (string, error) {
-	settings, err := Settings.Search("WHERE Key = ?", key)
-	if err != nil || len(settings) == 0 {
+	setting, err := Settings.Find("WHERE Key = ?", key)
+	if err != nil {
 		return "", err
 	}
-	return settings[0].Value, nil
+	return setting.Value, nil
 }
 
 // SetSetting creates or updates a setting
 func SetSetting(key, value, settingType string) error {
-	settings, _ := Settings.Search("WHERE Key = ?", key)
+	setting, err := Settings.Find("WHERE Key = ?", key)
 	
-	if len(settings) > 0 {
+	if err == nil && setting != nil {
 		// Update existing
-		settings[0].Value = value
-		return Settings.Update(settings[0])
+		setting.Value = value
+		return Settings.Update(setting)
 	}
 	
 	// Create new
-	_, err := Settings.Insert(&Setting{
+	_, err = Settings.Insert(&Setting{
 		Key:   key,
 		Value: value,
 		Type:  settingType,
