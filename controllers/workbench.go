@@ -54,6 +54,9 @@ func (c *WorkbenchController) Setup(app *application.App) {
 	// Partial routes for HTMX lazy loading
 	http.Handle("GET /partials/activity", app.Serve("activity-log.html", auth.Required))
 
+	// Tour completion endpoint
+	http.Handle("POST /settings/tour-complete", app.ProtectFunc(c.completeTour, auth.Required))
+
 	// Coder proxy route
 	http.Handle("/coder/", http.StripPrefix("/coder/", app.Protect(services.CoderProxy(), auth.Required)))
 
@@ -151,6 +154,29 @@ func (c *WorkbenchController) deleteRepo(w http.ResponseWriter, r *http.Request)
 	c.Refresh(w, r)
 }
 
+// completeTour handles POST /settings/tour-complete to save tour preference.
+// Stores a setting indicating the user has completed or skipped the tour.
+// This prevents the tour from showing on subsequent visits.
+func (c *WorkbenchController) completeTour(w http.ResponseWriter, r *http.Request) {
+	// Save the tour completion setting
+	if err := models.SetSetting("tour_completed", "true", "user_preference"); err != nil {
+		log.Printf("Failed to save tour preference: %v", err)
+	}
+
+	// Check if user wants to never show again
+	if r.FormValue("dont_show") == "true" {
+		if err := models.SetSetting("tour_never_show", "true", "user_preference"); err != nil {
+			log.Printf("Failed to save tour never show preference: %v", err)
+		}
+	}
+
+	// Log the activity
+	internal.LogUserActivity("tour_complete", "", "Tour completed")
+
+	// Return empty response for HTMX
+	w.WriteHeader(http.StatusOK)
+}
+
 // ============================================================================
 // Template Helper Methods - Accessible in views as {{workbench.MethodName}}
 // ============================================================================
@@ -208,4 +234,19 @@ func (c *WorkbenchController) GetPublicKey() string {
 // Template usage: {{workbench.FormatActivityTime .CreatedAt}}
 func (c *WorkbenchController) FormatActivityTime(t time.Time) string {
 	return internal.FormatTimeInUserTZ(t, c.Request)
+}
+
+// ShouldShowTour checks if the tour should be displayed to the user.
+// Returns true on first visit or if tour was never completed.
+// Template usage: {{if workbench.ShouldShowTour}}...{{end}}
+func (c *WorkbenchController) ShouldShowTour() bool {
+	// Check if user explicitly said never show again
+	neverShow, _ := models.GetSetting("tour_never_show")
+	if neverShow == "true" {
+		return false
+	}
+
+	// Check if tour was completed
+	completed, _ := models.GetSetting("tour_completed")
+	return completed != "true"
 }

@@ -214,5 +214,16 @@
 </main>
 
 {{template "partials/clone-repo-modal" .}}
+{{template "tour-modal.html" .}}
+
+<!-- Auto-show tour for new users -->
+{{if workbench.ShouldShowTour}}
+<script type="text/hyperscript">
+    on load
+        wait 500ms
+        call tour_modal.showModal()
+    end
+</script>
+{{end}}
 
 {{template "layout/end" .}}

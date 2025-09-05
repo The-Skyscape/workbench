@@ -1,0 +1,304 @@
+<dialog id="tour_modal" class="modal" aria-modal="true" role="dialog">
+    <div class="modal-box max-w-2xl">
+        <!-- Progress Steps -->
+        <div class="flex justify-center mb-6">
+            <ul class="steps">
+                <li class="step step-primary" id="step-indicator-1">Welcome</li>
+                <li class="step" id="step-indicator-2">Repositories</li>
+                <li class="step" id="step-indicator-3">VS Code</li>
+                <li class="step" id="step-indicator-4">Get Started</li>
+            </ul>
+        </div>
+
+        <!-- Step Content Container -->
+        <div id="tour-content" class="min-h-[300px]">
+            
+            <!-- Step 1: Welcome -->
+            <div id="tour-step-1" class="step-content">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">Welcome to Skyscape Workbench!</h2>
+                    <p class="text-base-content/70">Let's take a quick tour of your cloud development environment.</p>
+                </div>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="flex gap-4 items-start">
+                        <div class="flex-shrink-0 w-10 h-10 bg-success/10 rounded-full flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Full VS Code IDE</h3>
+                            <p class="text-sm text-base-content/70">Browser-based development with all your favorite extensions</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4 items-start">
+                        <div class="flex-shrink-0 w-10 h-10 bg-info/10 rounded-full flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V2" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Git Repository Management</h3>
+                            <p class="text-sm text-base-content/70">Clone, sync, and manage all your projects in one place</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4 items-start">
+                        <div class="flex-shrink-0 w-10 h-10 bg-warning/10 rounded-full flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Real-time Monitoring</h3>
+                            <p class="text-sm text-base-content/70">Track CPU, memory, and storage usage at a glance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Repositories -->
+            <div id="tour-step-2" class="step-content hidden">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">Repository Management</h2>
+                    <p class="text-base-content/70">Clone and manage your Git repositories</p>
+                </div>
+
+                <div class="bg-base-200 rounded-lg p-4 mb-6">
+                    <h3 class="font-semibold mb-3">How to clone a repository:</h3>
+                    <ol class="space-y-2">
+                        <li class="flex gap-2">
+                            <span class="text-primary font-bold">1.</span>
+                            <span>Click "Clone Repository" in Quick Actions</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-primary font-bold">2.</span>
+                            <span>Enter your repository URL (HTTPS or SSH)</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-primary font-bold">3.</span>
+                            <span>Your SSH key is ready to copy from the clone dialog</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="alert alert-info">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold">Pro Tip</h3>
+                        <div class="text-xs">You can sync repositories anytime with the Sync button</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: VS Code -->
+            <div id="tour-step-3" class="step-content hidden">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">VS Code in Your Browser</h2>
+                    <p class="text-base-content/70">Your full development environment, one click away</p>
+                </div>
+
+                <div class="space-y-4 mb-6">
+                    <div class="bg-base-200 rounded-lg p-4">
+                        <h3 class="font-semibold mb-2">Quick Access</h3>
+                        <p class="text-sm text-base-content/70 mb-3">Click "Open VS Code" to launch your IDE</p>
+                        <div class="flex items-center gap-2">
+                            <kbd class="kbd kbd-sm">Ctrl</kbd>
+                            <span class="text-sm">+</span>
+                            <kbd class="kbd kbd-sm">K</kbd>
+                            <span class="text-sm text-base-content/70 ml-2">Keyboard shortcut</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-base-200 rounded-lg p-3">
+                            <h4 class="font-medium text-sm mb-1">Pre-installed</h4>
+                            <ul class="text-xs text-base-content/70 space-y-1">
+                                <li>• Node.js & npm</li>
+                                <li>• Python 3</li>
+                                <li>• Git</li>
+                                <li>• Docker</li>
+                            </ul>
+                        </div>
+                        <div class="bg-base-200 rounded-lg p-3">
+                            <h4 class="font-medium text-sm mb-1">Features</h4>
+                            <ul class="text-xs text-base-content/70 space-y-1">
+                                <li>• Terminal access</li>
+                                <li>• Extensions</li>
+                                <li>• File explorer</li>
+                                <li>• Debugging</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Get Started -->
+            <div id="tour-step-4" class="step-content hidden">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 mx-auto mb-4 bg-success/10 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">You're All Set!</h2>
+                    <p class="text-base-content/70">Your workbench is ready for development</p>
+                </div>
+
+                <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-6 mb-6">
+                    <h3 class="font-semibold mb-3">Quick Start:</h3>
+                    <div class="space-y-3">
+                        <button class="btn btn-sm btn-primary btn-block justify-start"
+                                _="on click call tour_modal.close() then call clone_modal.showModal()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                            </svg>
+                            Clone Your First Repository
+                        </button>
+                        <a href="{{host}}/coder/?folder=/home/coder" target="_blank" 
+                           class="btn btn-sm btn-primary btn-block justify-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                            Open VS Code Now
+                        </a>
+                    </div>
+                </div>
+
+                <label class="flex items-center gap-3 p-4 bg-base-200 rounded-lg cursor-pointer">
+                    <input type="checkbox" id="dont-show-tour" class="checkbox checkbox-primary" />
+                    <span class="text-sm">Don't show this tour on next visit</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="modal-action justify-between">
+            <button id="tour-prev" 
+                    class="btn btn-ghost"
+                    disabled
+                    _="on click 
+                       set currentStep to @data-step of #tour-content then 
+                       decrement currentStep then
+                       send showStep(step: currentStep) to #tour-content">
+                Previous
+            </button>
+            
+            <div class="flex gap-2">
+                <form hx-post="{{host}}/settings/tour-complete" 
+                      hx-trigger="submit"
+                      _="on htmx:afterRequest call tour_modal.close()">
+                    <button type="submit" class="btn btn-ghost">Skip Tour</button>
+                </form>
+                
+                <button id="tour-next" 
+                        class="btn btn-primary"
+                        _="on click 
+                           set currentStep to @data-step of #tour-content then 
+                           increment currentStep then
+                           send showStep(step: currentStep) to #tour-content">
+                    Next
+                </button>
+                
+                <button id="tour-finish" 
+                        class="btn btn-success hidden"
+                        hx-post="{{host}}/settings/tour-complete"
+                        hx-trigger="click"
+                        hx-include="#dont-show-tour"
+                        _="on htmx:afterRequest call tour_modal.close()">
+                    Get Started
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Close modal on backdrop click -->
+    <form method="dialog" class="modal-backdrop">
+        <button _="on click send closeTour to #tour-content">close</button>
+    </form>
+</dialog>
+
+<script type="text/hyperscript">
+    -- Tour step management
+    on showStep(step) from #tour-content
+        -- Store current step
+        set @data-step of #tour-content to step
+        
+        -- Hide all steps
+        add .hidden to .step-content
+        
+        -- Show current step
+        remove .hidden from #tour-step-{step}
+        
+        -- Update progress indicators
+        for i in [1, 2, 3, 4]
+            if i <= step
+                add .step-primary to #step-indicator-{i}
+            else
+                remove .step-primary from #step-indicator-{i}
+            end
+        end
+        
+        -- Update navigation buttons
+        if step == 1
+            set @disabled of #tour-prev to true
+        else
+            set @disabled of #tour-prev to false
+        end
+        
+        if step == 4
+            hide #tour-next
+            show #tour-finish
+        else
+            show #tour-next
+            hide #tour-finish
+        end
+    end
+    
+    -- Close tour and save preference
+    on closeTour from #tour-content
+        fetch '{{host}}/settings/tour-complete' with method:'POST'
+        call tour_modal.close()
+    end
+    
+    -- Initialize on load
+    on load from #tour-content
+        set @data-step of me to 1
+    end
+    
+    -- Keyboard shortcuts
+    on keydown[key=='Escape'] from window
+        if tour_modal.open send closeTour to #tour-content
+    end
+    
+    on keydown[key=='ArrowRight'] from window
+        if tour_modal.open and #tour-next.offsetParent != null
+            trigger click on #tour-next
+        end
+    end
+    
+    on keydown[key=='ArrowLeft'] from window
+        if tour_modal.open and not #tour-prev[@disabled]
+            trigger click on #tour-prev
+        end
+    end
+</script>
