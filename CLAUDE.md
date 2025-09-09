@@ -10,6 +10,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 **AGPL-3.0** - This project uses Coder (code-server) which requires AGPL licensing. All modifications must be open-sourced if deployed as a service.
 
+## Design Philosophy
+
+### HTMX/HATEOAS Architecture
+We've rejected the complexity of modern JavaScript frameworks in favor of HTMX with HATEOAS principles:
+- **HTML as the engine of application state** - The server sends HTML, not JSON
+- **No client-side state management** - All state lives on the server
+- **Progressive enhancement** - Works without JavaScript, enhanced with HTMX
+- **Simplicity over features** - No webpack, no npm, no build pipeline for the frontend
+
+### Value Receiver Pattern for Request Isolation
+Our controllers use a unique pattern for request isolation without mutexes:
+```go
+// Value receiver creates a copy
+func (c WorkbenchController) Handle(r *http.Request) application.Controller {
+    c.Request = r  // Modifies the copy
+    return &c      // Returns pointer to the copy
+}
+```
+This gives each request its own controller instance (16-32 bytes overhead) with zero shared state.
+
+### Template Validation with check-views
+Templates are validated at build time using our `check-views` tool:
+- Parses Go AST to find all controller methods
+- Parses templates to find all references
+- Validates that every template reference has a corresponding controller method
+- Turns runtime template errors into build-time errors
+
+### No Client State Principle
+By eliminating client-side state, we've removed entire categories of bugs:
+- No state synchronization issues
+- No cache invalidation problems
+- No version mismatches between API and client
+- Debugging happens in one place: the server
+
 ## Architecture
 
 This application follows the TheSkyscape DevTools MVC pattern:
