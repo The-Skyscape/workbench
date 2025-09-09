@@ -7,6 +7,7 @@ import (
 	"github.com/The-Skyscape/devtools/pkg/application"
 
 	"workbench/controllers"
+	_ "workbench/internal/commander" // Initialize Commander client
 )
 
 //go:embed all:views
