@@ -58,6 +58,8 @@ func (c AuthController) Handle(req *http.Request) application.Controller {
 
 // handleSignup handles the signup form submission (single user only)
 func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
+	c.SetRequest(r)
+	
 	// Check if a user already exists (single-user system)
 	if c.Collection.Users.Count("") > 0 {
 		c.RenderError(w, r, errors.New("A user already exists. This is a single-user system."))
@@ -114,6 +116,8 @@ func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 
 // handleSignin processes signin form submission with rate limiting
 func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
+	c.SetRequest(r)
+	
 	// Rate limiting check - 5 attempts per minute per IP
 	clientIP := r.RemoteAddr  // Simple IP for single-user system
 	if !internal.AuthRateLimiter.Allow(clientIP + ":signin") {
@@ -162,6 +166,8 @@ func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
 
 // handleSignout processes signout
 func (c *AuthController) handleSignout(w http.ResponseWriter, r *http.Request) {
+	c.SetRequest(r)
+	
 	// Get current user before clearing
 	user := c.CurrentUser()
 	
