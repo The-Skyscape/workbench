@@ -22,7 +22,7 @@ func Monitoring() (string, *MonitoringController) {
 // and system load averages. The monitor runs in a background goroutine and maintains
 // a sliding window of samples for trend analysis.
 type MonitoringController struct {
-	application.BaseController
+	application.Controller
 	monitor *internal.SystemMonitor
 }
 
@@ -33,7 +33,7 @@ type MonitoringController struct {
 // - GET /partials/stats - System statistics partial (CPU, memory, disk)
 // - GET /partials/coder-status - VS Code server status partial
 func (c *MonitoringController) Setup(app *application.App) {
-	c.BaseController.Setup(app)
+	c.Controller.Setup(app)
 
 	auth := app.Use("auth").(*AuthController)
 
@@ -48,7 +48,7 @@ func (c *MonitoringController) Setup(app *application.App) {
 // Handle prepares the controller for request-specific operations.
 // Called for each HTTP request to set the request context.
 // Returns a pointer to the controller for use in template rendering.
-func (c MonitoringController) Handle(req *http.Request) application.Controller {
+func (c MonitoringController) Handle(req *http.Request) application.Handler {
 	c.Request = req
 	return &c
 }

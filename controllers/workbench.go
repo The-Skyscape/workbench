@@ -25,7 +25,7 @@ func Workbench() (string, *WorkbenchController) {
 // - SSH key management for repository access
 // - Activity logging and display
 type WorkbenchController struct {
-	application.BaseController
+	application.Controller
 }
 
 // Setup initializes the workbench controller during application startup.
@@ -39,7 +39,7 @@ type WorkbenchController struct {
 // - GET /partials/activity - Activity log partial for HTMX
 // - /coder/* - Proxied VS Code server interface
 func (c *WorkbenchController) Setup(app *application.App) {
-	c.BaseController.Setup(app)
+	c.Controller.Setup(app)
 
 	auth := app.Use("auth").(*AuthController)
 
@@ -68,7 +68,7 @@ func (c *WorkbenchController) Setup(app *application.App) {
 // Called for each HTTP request to set the request context, making it
 // available to template helper methods that need request information
 // (e.g., for timezone formatting or user context).
-func (c WorkbenchController) Handle(req *http.Request) application.Controller {
+func (c WorkbenchController) Handle(req *http.Request) application.Handler {
 	c.Request = req
 	return &c
 }
@@ -101,7 +101,7 @@ func (c *WorkbenchController) verifySSHKeys() {
 // Returns error messages for duplicate names or clone failures.
 func (c *WorkbenchController) cloneRepo(w http.ResponseWriter, r *http.Request) {
 	c.SetRequest(r)
-	
+
 	url := r.FormValue("url")
 	name := r.FormValue("name")
 
@@ -132,7 +132,7 @@ func (c *WorkbenchController) cloneRepo(w http.ResponseWriter, r *http.Request) 
 // Returns error if repository doesn't exist or pull fails.
 func (c *WorkbenchController) pullRepo(w http.ResponseWriter, r *http.Request) {
 	c.SetRequest(r)
-	
+
 	name := r.PathValue("name")
 
 	if err := internal.PullRepository(name); err != nil {
@@ -149,7 +149,7 @@ func (c *WorkbenchController) pullRepo(w http.ResponseWriter, r *http.Request) {
 // Logs the deletion activity for audit purposes.
 func (c *WorkbenchController) deleteRepo(w http.ResponseWriter, r *http.Request) {
 	c.SetRequest(r)
-	
+
 	name := r.PathValue("name")
 
 	if err := internal.DeleteRepository(name); err != nil {
@@ -165,7 +165,7 @@ func (c *WorkbenchController) deleteRepo(w http.ResponseWriter, r *http.Request)
 // This prevents the tour from showing on subsequent visits.
 func (c *WorkbenchController) completeTour(w http.ResponseWriter, r *http.Request) {
 	c.SetRequest(r)
-	
+
 	// Save the tour completion setting
 	if err := models.SetSetting("tour_completed", "true", "user_preference"); err != nil {
 		log.Printf("Failed to save tour preference: %v", err)

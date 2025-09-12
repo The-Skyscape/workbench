@@ -17,13 +17,13 @@ import (
 // with a persistent "workbench" cookie for session management.
 func Auth() (string, *AuthController) {
 	// Create new auth toolkit
-	auth := authentication.New("")  // Uses AUTH_SECRET env var
-	
+	auth := authentication.New("") // Uses AUTH_SECRET env var
+
 	return "auth", &AuthController{
-		BaseController: application.BaseController{},
-		auth:           auth,
-		cookieName:     "workbench",
-		Collection:     models.Auth,  // For backward compatibility
+		Controller: application.Controller{},
+		auth:       auth,
+		cookieName: "workbench",
+		Collection: models.Auth, // For backward compatibility
 	}
 }
 
@@ -34,16 +34,16 @@ func Auth() (string, *AuthController) {
 // - Implements rate limiting on signin attempts
 // - Uses 30-day session cookies for convenience
 type AuthController struct {
-	application.BaseController
-	*authentication.Collection  // Embed for backward compatibility
-	auth       *authentication.Auth
-	cookieName string
+	application.Controller
+	*authentication.Collection // Embed for backward compatibility
+	auth                       *authentication.Auth
+	cookieName                 string
 }
 
 // Setup initializes the authentication controller and registers HTTP routes.
 func (c *AuthController) Setup(app *application.App) {
-	c.BaseController.Setup(app)
-	
+	c.Controller.Setup(app)
+
 	// Register only the POST handlers for authentication
 	http.HandleFunc("POST /_auth/signup", c.handleSignup)
 	http.HandleFunc("POST /_auth/signin", c.handleSignin)
@@ -51,7 +51,7 @@ func (c *AuthController) Setup(app *application.App) {
 }
 
 // Handle prepares the controller for request-specific operations.
-func (c AuthController) Handle(req *http.Request) application.Controller {
+func (c AuthController) Handle(req *http.Request) application.Handler {
 	c.Request = req
 	return &c
 }
@@ -59,7 +59,7 @@ func (c AuthController) Handle(req *http.Request) application.Controller {
 // handleSignup handles the signup form submission (single user only)
 func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 	c.SetRequest(r)
-	
+
 	// Check if a user already exists (single-user system)
 	if c.Collection.Users.Count("") > 0 {
 		c.RenderError(w, r, errors.New("A user already exists. This is a single-user system."))
@@ -67,7 +67,7 @@ func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Rate limiting check
-	clientIP := r.RemoteAddr  // Simple IP for single-user system
+	clientIP := r.RemoteAddr // Simple IP for single-user system
 	if !internal.AuthRateLimiter.Allow(clientIP + ":signup") {
 		c.RenderError(w, r, errors.New("Too many attempts. Please wait a minute and try again."))
 		return
@@ -98,10 +98,10 @@ func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 		c.RenderError(w, r, err)
 		return
 	}
-	
+
 	// Set cookie
 	c.auth.SetCookie(w, c.cookieName, token, time.Now().Add(30*24*time.Hour), r.TLS != nil)
-	
+
 	// Create session record
 	models.Auth.Sessions.Insert(&authentication.Session{
 		UserID: user.ID,
@@ -117,9 +117,9 @@ func (c *AuthController) handleSignup(w http.ResponseWriter, r *http.Request) {
 // handleSignin processes signin form submission with rate limiting
 func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
 	c.SetRequest(r)
-	
+
 	// Rate limiting check - 5 attempts per minute per IP
-	clientIP := r.RemoteAddr  // Simple IP for single-user system
+	clientIP := r.RemoteAddr // Simple IP for single-user system
 	if !internal.AuthRateLimiter.Allow(clientIP + ":signin") {
 		c.RenderError(w, r, errors.New("Too many signin attempts. Please wait a minute and try again."))
 		internal.LogActivity("signin_rate_limited", "Signin rate limited")
@@ -148,10 +148,10 @@ func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
 		c.RenderError(w, r, err)
 		return
 	}
-	
+
 	// Set cookie
 	c.auth.SetCookie(w, c.cookieName, token, time.Now().Add(30*24*time.Hour), r.TLS != nil)
-	
+
 	// Create session record
 	models.Auth.Sessions.Insert(&authentication.Session{
 		UserID: user.ID,
@@ -167,18 +167,18 @@ func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
 // handleSignout processes signout
 func (c *AuthController) handleSignout(w http.ResponseWriter, r *http.Request) {
 	c.SetRequest(r)
-	
+
 	// Get current user before clearing
 	user := c.CurrentUser()
-	
+
 	// Clear cookie
 	c.auth.ClearCookie(w, c.cookieName)
-	
+
 	// Log the signout
 	if user != nil {
 		internal.LogUserActivity("user_signout", user.Handle, "User signed out")
 	}
-	
+
 	// Refresh to show signin page
 	c.Refresh(w, r)
 }
@@ -190,25 +190,25 @@ func (c *AuthController) CurrentUser() *authentication.User {
 	if err != nil {
 		return nil
 	}
-	
+
 	// Validate token
 	claims, err := c.auth.ValidateToken(token)
 	if err != nil {
 		return nil
 	}
-	
+
 	// Get user ID from claims
 	userID, ok := claims["user_id"].(string)
 	if !ok {
 		return nil
 	}
-	
+
 	// Get user from database
 	user, err := c.Collection.Users.Get(userID)
 	if err != nil {
 		return nil
 	}
-	
+
 	return user
 }
 
@@ -226,7 +226,7 @@ func (c *AuthController) Required(app *application.App, w http.ResponseWriter, r
 		app.Render(w, r, "signup.html", nil)
 		return false
 	}
-	
+
 	// Check authentication
 	user := c.GetAuthenticatedUser(r)
 	if user == nil {
@@ -234,7 +234,7 @@ func (c *AuthController) Required(app *application.App, w http.ResponseWriter, r
 		app.Render(w, r, "signin.html", nil)
 		return false
 	}
-	
+
 	// User is authenticated
 	return true
 }
@@ -251,24 +251,24 @@ func (c *AuthController) GetAuthenticatedUser(r *http.Request) *authentication.U
 	if err != nil {
 		return nil
 	}
-	
+
 	// Validate token
 	claims, err := c.auth.ValidateToken(token)
 	if err != nil {
 		return nil
 	}
-	
+
 	// Get user ID from claims
 	userID, ok := claims["user_id"].(string)
 	if !ok {
 		return nil
 	}
-	
+
 	// Get user from database
 	user, err := c.Collection.Users.Get(userID)
 	if err != nil {
 		return nil
 	}
-	
+
 	return user
 }
