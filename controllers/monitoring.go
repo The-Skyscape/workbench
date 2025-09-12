@@ -60,7 +60,7 @@ func (c MonitoringController) Handle(req *http.Request) application.Controller {
 // GetSystemStats returns comprehensive system statistics including CPU, memory,
 // disk usage, and load averages. Returns the most recent sample from the monitor.
 // Template usage: {{with monitoring.GetSystemStats}}...{{end}}
-func (c *MonitoringController) GetSystemStats() interface{} {
+func (c *MonitoringController) GetSystemStats() any {
 	if c.monitor == nil {
 		return nil
 	}
@@ -73,7 +73,6 @@ func (c *MonitoringController) GetSystemStats() interface{} {
 func (c *MonitoringController) GetSystemInfo() internal.SystemInfo {
 	return internal.GetSystemInfo()
 }
-
 
 // GetCPUUsage returns the current CPU usage as a percentage (0-100).
 // Returns 0 if monitoring data is unavailable.
@@ -97,7 +96,6 @@ func (c *MonitoringController) GetMemoryUsage() float64 {
 	return stats.Memory.UsedPercent
 }
 
-
 // GetLoadAverage returns the 1-minute load average as a formatted string.
 // Load average indicates system load relative to CPU cores.
 // Values > CPU count suggest high load.
@@ -109,7 +107,6 @@ func (c *MonitoringController) GetLoadAverage() string {
 	}
 	return fmt.Sprintf("%.2f", stats.LoadAverage.Load1)
 }
-
 
 // FormatBytes converts bytes to human-readable format (KB, MB, GB, TB).
 // Uses binary prefixes (1024-based) for accurate representation.
