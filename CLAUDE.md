@@ -44,29 +44,74 @@ By eliminating client-side state, we've removed entire categories of bugs:
 - No version mismatches between API and client
 - Debugging happens in one place: the server
 
-## Architecture
+## Architecture & Directory Rules
 
 This application follows the TheSkyscape DevTools MVC pattern:
 
-### Core Structure
+### Directory Structure (CRITICAL)
+```
+workbench/
+├── controllers/        # HTTP handlers ONLY (no business logic!)
+├── internal/          # Business logic ONLY (no HTTP!)
+├── services/          # Docker containers ONLY
+├── models/            # Data models ONLY (no business logic!)
+├── views/             # Templates (access controllers only)
+└── main.go           # Entry point
+```
 
-- **`controllers/`** - HTTP handlers with factory functions and Setup/Handle methods
-  - `auth.go` - Single-user authentication with inline rendering
-  - `workbench.go` - Main dashboard, repository management, SSH key handling
-  - `monitoring.go` - System monitoring and stats
-- **`models/`** - Database models with optimized queries
-  - `repository.go` - Git repository tracking
-  - `activity.go` - User activity logging
-  - `settings.go` - Key-value settings store
-- **`internal/`** - Business logic
+### Directory Responsibilities (NEVER VIOLATE)
+
+#### controllers/
+- **Purpose**: HTTP request/response handling ONLY
+- **Files**:
+  - `auth.go` - Single-user authentication
+  - `workbench.go` - Main dashboard, repository management
+  - `monitoring.go` - System monitoring endpoints
+- **Do**: Parse requests → Call internal/ → Render responses
+- **Never**: Business logic, Git operations, SSH key generation
+
+#### internal/
+- **Purpose**: Business logic
+- **Files**:
   - `repositories.go` - Git operations (clone, pull, delete)
   - `ssh.go` - SSH key generation and management
   - `monitoring.go` - System stats with DataDir disk monitoring
   - `activity.go` - Activity logging helpers
-- **`services/`** - External service integrations
-  - `coder.go` - VS Code server management
-- **`views/`** - HTML templates with HTMX and DaisyUI
-- **`main.go`** - Application entry point with embedded views
+- **Do**: Business rules, Git operations, system monitoring
+- **Never**: HTTP handling, request/response
+
+#### services/
+- **Purpose**: Docker container management ONLY
+- **Files**:
+  - `coder.go` - VS Code server (code-server) container
+- **Pattern**: Wraps containers.Service from devtools
+- **Do**: Start/stop container, health checks, proxy setup
+- **Never**: Business logic, Git operations
+
+#### models/
+- **Purpose**: Data structures and repositories
+- **Files**:
+  - `repository.go` - Git repository tracking
+  - `activity.go` - User activity logging
+  - `settings.go` - Key-value settings store
+- **Do**: Define structs, implement Table() method
+- **Never**: Business logic, Git commands
+
+### Import Rules (CRITICAL)
+
+**What each directory CAN import:**
+- **controllers** CAN import: `internal/`, `services/`, `models/`, `devtools/pkg/*`
+- **internal** CAN import: `services/`, `models/`, `devtools/pkg/*`
+- **services** CAN import: `models/`, `devtools/pkg/containers`
+- **models** CAN import: `devtools/pkg/database`
+- **views** CAN import: NOTHING (templates access controllers via template functions)
+
+### Forbidden Imports (NEVER DO THESE)
+- ❌ **internal** CANNOT import `controllers` (business logic doesn't know about HTTP)
+- ❌ **services** CANNOT import `internal` (containers don't know about business logic)
+- ❌ **services** CANNOT import `controllers` (containers don't know about HTTP)
+- ❌ **models** CANNOT import `services`, `internal`, or `controllers` (data doesn't know about logic)
+- ❌ **No circular dependencies**
 
 ### Key Features
 

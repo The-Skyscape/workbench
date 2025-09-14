@@ -19,6 +19,25 @@ var (
 	Settings     = database.Manage(DB, new(Setting))
 )
 
+func init() {
+	// Create database indexes for common queries
+	createIndexes()
+}
+
+// createIndexes creates database indexes for common queries
+func createIndexes() {
+	// Workbench is single-user, so fewer indexes needed
+	
+	// Activity tracking
+	Activities.Index("CreatedAt") // For ordering recent activities
+	
+	// Settings lookup
+	Settings.Index("Key") // For key-value lookups
+	
+	// Repository management
+	Repositories.Index("CreatedAt") // For ordering repositories
+}
+
 // InitializeForTesting reinitializes the global repositories with a test database
 func InitializeForTesting(testDB *database.DynamicDB) {
 	DB = testDB

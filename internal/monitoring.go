@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"syscall"
 
+	"github.com/The-Skyscape/devtools/pkg/containers"
 	"github.com/The-Skyscape/devtools/pkg/database"
-	"github.com/The-Skyscape/devtools/pkg/monitoring"
 )
 
 // SystemMonitor wraps the devtools monitoring collector to provide
@@ -14,7 +14,7 @@ import (
 // disk, and load average metrics at 2-second intervals, maintaining
 // a rolling window of 100 samples (3.3 minutes of history).
 type SystemMonitor struct {
-	collector *monitoring.Collector
+	collector *containers.Collector
 	started   bool
 }
 
@@ -23,7 +23,7 @@ type SystemMonitor struct {
 // Keeps 100 samples in memory for trend visualization.
 func NewSystemMonitor() *SystemMonitor {
 	return &SystemMonitor{
-		collector: monitoring.NewCollector(false, 100), // Keep 100 samples
+		collector: containers.NewCollector(false, 100), // Keep 100 samples
 	}
 }
 
@@ -40,7 +40,7 @@ func (m *SystemMonitor) Start() {
 // GetCurrentStats returns the most recent system statistics sample.
 // Automatically starts the monitor if not already running.
 // Returns nil if no data is available yet (rare, only immediately after start).
-func (m *SystemMonitor) GetCurrentStats() *monitoring.SystemStats {
+func (m *SystemMonitor) GetCurrentStats() *containers.SystemStats {
 	if !m.started {
 		m.Start()
 	}
@@ -53,7 +53,7 @@ func (m *SystemMonitor) GetCurrentStats() *monitoring.SystemStats {
 //   - limit: Maximum number of samples to return (0 = all samples)
 //
 // Returns newest samples first. Used for generating charts and graphs.
-func (m *SystemMonitor) GetHistory(limit int) []monitoring.SystemStats {
+func (m *SystemMonitor) GetHistory(limit int) []containers.SystemStats {
 	if !m.started {
 		m.Start()
 	}
