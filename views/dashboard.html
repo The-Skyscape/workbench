@@ -17,10 +17,10 @@
     </div>
 
     <!-- Main Stats Grid with Auto-refresh -->
-    <section id="stats-container" 
-             hx-get="{{host}}/partials/stats" 
-             hx-trigger="every 10s" 
-             hx-swap="innerHTML" 
+    <section id="stats-container"
+             hx-get="{{host}}/partials/stats"
+             hx-trigger="every 10s"
+             hx-swap="innerHTML"
              class="mb-6 min-h-[180px]"
              role="region"
              aria-label="System statistics"
@@ -47,66 +47,66 @@
                 <div class="card-body">
                     <h2 id="repos-title" class="card-title">Cloned Repositories</h2>
                     {{if workbench.HasRepositories}}
-                        <div class="overflow-x-auto">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Repository</th>
-                                        <th class="text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{range workbench.GetRepositories}}
-                                    <tr class="hover">
-                                        <td>
-                                            <div class="font-medium">{{.Name}}</div>
-                                            <div class="text-xs text-base-content/50">{{.LocalPath}}</div>
-                                        </td>
-                                        <td class="text-right">
-                                            <div class="btn-group">
-                                                <button hx-post="{{host}}/repos/pull/{{.Name}}" 
-                                                        hx-swap="none"
-                                                        class="btn btn-ghost btn-xs"
-                                                        aria-label="Sync repository {{.Name}}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
-                                                    Sync
-                                                </button>
-                                                <a href="{{host}}/coder/?folder=/home/coder/repos/{{.Name}}" 
-                                                   target="_blank"
-                                                   class="btn btn-ghost btn-xs"
-                                                   aria-label="Open {{.Name}} in VS Code">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                                    </svg>
-                                                    Open
-                                                </a>
-                                                <button hx-post="{{host}}/repos/delete/{{.Name}}" 
-                                                        hx-confirm="Are you sure you want to remove this repository?"
-                                                        hx-swap="none"
-                                                        class="btn btn-ghost btn-xs text-error"
-                                                        aria-label="Remove repository {{.Name}}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                    Remove
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {{end}}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Repository</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range workbench.GetRepositories}}
+                                <tr class="hover">
+                                    <td>
+                                        <div class="font-medium">{{.Name}}</div>
+                                        <div class="text-xs text-base-content/50">{{.LocalPath}}</div>
+                                    </td>
+                                    <td class="text-right">
+                                        <div class="btn-group">
+                                            <button hx-post="{{host}}/repos/pull/{{.Name}}"
+                                                    hx-swap="none"
+                                                    class="btn btn-ghost btn-xs"
+                                                    aria-label="Sync repository {{.Name}}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                                Sync
+                                            </button>
+                                            <a href="{{host}}/coder/?folder=/home/coder/repos/{{.Name}}"
+                                               target="_blank"
+                                               class="btn btn-ghost btn-xs"
+                                               aria-label="Open {{.Name}} in VS Code">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                                </svg>
+                                                Open
+                                            </a>
+                                            <button hx-post="{{host}}/repos/delete/{{.Name}}"
+                                                    hx-confirm="Are you sure you want to remove this repository?"
+                                                    hx-swap="none"
+                                                    class="btn btn-ghost btn-xs text-error"
+                                                    aria-label="Remove repository {{.Name}}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
                     {{else}}
-                        <div class="text-center py-8 text-base-content/50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                            </svg>
-                            <p class="text-sm">No repositories cloned yet</p>
-                            <p class="text-xs mt-1">Use the Clone Repository button to get started</p>
-                        </div>
+                    <div class="text-center py-8 text-base-content/50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                        <p class="text-sm">No repositories cloned yet</p>
+                        <p class="text-xs mt-1">Use the Clone Repository button to get started</p>
+                    </div>
                     {{end}}
                 </div>
             </section>
@@ -120,22 +120,22 @@
                     <h3 id="actions-title" class="card-title text-lg">Quick Actions</h3>
                     <div class="flex flex-col gap-2">
                         {{if workbench.IsCoderRunning}}
-                            <a href="{{host}}/coder/?folder=/home/coder" 
-                               target="_blank" 
-                               class="btn btn-primary btn-block"
-                               aria-label="Open VS Code in new tab">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                </svg>
-                                Open VS Code
-                            </a>
+                        <a href="{{host}}/coder/?folder=/home/coder"
+                           target="_blank"
+                           class="btn btn-primary btn-block"
+                           aria-label="Open VS Code in new tab">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                            Open VS Code
+                        </a>
                         {{else}}
-                            <button class="btn btn-ghost btn-block btn-disabled" aria-disabled="true">
-                                <span class="loading loading-spinner loading-xs" aria-label="Loading"></span>
-                                VS Code Starting...
-                            </button>
+                        <button class="btn btn-ghost btn-block btn-disabled" aria-disabled="true">
+                            <span class="loading loading-spinner loading-xs" aria-label="Loading"></span>
+                            VS Code Starting...
+                        </button>
                         {{end}}
-                        <button class="btn btn-neutral btn-block" 
+                        <button class="btn btn-neutral btn-block"
                                 onclick="clone_modal.showModal()"
                                 aria-label="Open clone repository dialog">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -151,8 +151,8 @@
             <section class="card bg-base-100 shadow-sm border border-base-300" aria-labelledby="activity-title">
                 <div class="card-body">
                     <h3 id="activity-title" class="card-title text-lg">Activity Log</h3>
-                    <div hx-get="{{host}}/partials/activity" 
-                         hx-trigger="load" 
+                    <div hx-get="{{host}}/partials/activity"
+                         hx-trigger="load"
                          hx-swap="innerHTML"
                          role="log"
                          aria-live="polite"
@@ -214,17 +214,9 @@
 </main>
 
 {{template "clone-repo-modal.html" .}}
-{{template "tour-modal.html" .}}
 
-<!-- Auto-show tour for new users -->
 {{if workbench.ShouldShowTour}}
-<script type="text/hyperscript">
-    on load
-        wait 500ms
-        call tour_modal.showModal()
-        send showStep(step: 1) to #tour-content
-    end
-</script>
+{{template "tour-modal.html" .}}
 {{end}}
 
 {{template "layout/end" .}}

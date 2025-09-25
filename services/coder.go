@@ -9,8 +9,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/The-Skyscape/devtools/pkg/database"
-
 	"github.com/The-Skyscape/devtools/pkg/containers"
 )
 
@@ -27,12 +25,12 @@ var Coder = &containers.Service{
 	Name:          "workbench-coder",
 	Image:         "codercom/code-server:latest",
 	Command:       "--auth none --bind-addr 0.0.0.0:8080",
-	Network:       "host",
+	Network:       "skyscape-internal",
 	RestartPolicy: "always",
 	Mounts: map[string]string{
-		"/home/.ssh": "/home/.ssh", // SSH keys for Git
-		fmt.Sprintf("%s/services/workbench-coder/", database.DataDir()):        "/home/coder",         // Main workspace
-		fmt.Sprintf("%s/services/workbench-coder/.config", database.DataDir()): "/home/coder/.config", // VS Code config
+		"/home/.ssh":                                 "/home/.ssh",          // SSH keys for Git
+		"/mnt/data/services/workbench-coder/":        "/home/coder",         // Main workspace
+		"/mnt/data/services/workbench-coder/.config": "/home/coder/.config", // VS Code config
 	},
 }
 
@@ -56,13 +54,13 @@ func init() {
 		return
 	}
 
-	prepareScript := fmt.Sprintf(`
-		mkdir -p %[1]s/coder
-		mkdir -p %[1]s/coder/.config
-		mkdir -p %[1]s/coder/repos
-		chmod -R 777 %[1]s/coder
-		chown -R 1000:1000 %[1]s/coder || true
-	`, database.DataDir())
+	prepareScript := `
+		mkdir -p /mnt/data/services/workbench-coder
+		mkdir -p /mnt/data/services/workbench-coder/.config
+		mkdir -p /mnt/data/services/workbench-coder/repos
+		chmod -R 777 /mnt/data/services/workbench-coder
+		chown -R 1000:1000 /mnt/data/services/workbench-coder || true
+	`
 
 	if err := containers.Local().Exec("bash", "-c", prepareScript); err != nil {
 		log.Fatalf("Failed to prepare coder directrories: %v", err)
