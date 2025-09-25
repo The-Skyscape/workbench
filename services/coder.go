@@ -30,9 +30,9 @@ var Coder = &containers.Service{
 	Network:       "host",
 	RestartPolicy: "always",
 	Mounts: map[string]string{
-		"/home/.ssh": "/home/.ssh",                                            // SSH keys for Git
-		fmt.Sprintf("%s/coder", database.DataDir()):         "/home/coder",     // Main workspace
-		fmt.Sprintf("%s/coder/.config", database.DataDir()): "/home/coder/.config", // VS Code config
+		"/home/.ssh": "/home/.ssh", // SSH keys for Git
+		fmt.Sprintf("%s/services/workbench-coder/", database.DataDir()):        "/home/coder",         // Main workspace
+		fmt.Sprintf("%s/services/workbench-coder/.config", database.DataDir()): "/home/coder/.config", // VS Code config
 	},
 }
 
@@ -45,7 +45,7 @@ func init() {
 	if strings.HasSuffix(os.Args[0], ".test") {
 		return
 	}
-	
+
 	log.Println("Initializing Coder service...")
 
 	// Check if container already exists
