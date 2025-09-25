@@ -64,7 +64,7 @@ workbench/
 #### controllers/
 - **Purpose**: HTTP request/response handling ONLY
 - **Files**:
-  - `auth.go` - Single-user authentication
+  - `auth.go` - Single-user authentication using devtools auth Collection
   - `workbench.go` - Main dashboard, repository management
   - `monitoring.go` - System monitoring endpoints
 - **Do**: Parse requests → Call internal/ → Render responses
