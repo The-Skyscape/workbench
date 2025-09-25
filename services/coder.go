@@ -27,6 +27,7 @@ var Coder = &containers.Service{
 	Command:       "--auth none --bind-addr 0.0.0.0:8080",
 	Network:       "skyscape-internal",
 	RestartPolicy: "always",
+	Ports:         map[int]int{8080: 8080},
 	Mounts: map[string]string{
 		"/home/.ssh":                                 "/home/.ssh",          // SSH keys for Git
 		"/mnt/data/services/workbench-coder/":        "/home/coder",         // Main workspace
