@@ -3,22 +3,27 @@ package internal
 import (
 	"fmt"
 	"strings"
-	"workbench/models"
 	"workbench/services"
+
+	"github.com/The-Skyscape/devtools/pkg/authentication"
+	"github.com/pkg/errors"
 )
 
 // GenerateSSHKeyForUser creates an SSH key pair for Git authentication.
 // Uses the email from settings or defaults to "user@workbench.local".
 // This is called during application startup if no key exists.
 // The generated key persists across container restarts via volume mount.
-func GenerateSSHKeyForUser() error {
-	email, _ := models.GetSetting("git_user_email")
-	if email == "" {
-		email = "user@workbench.local"
+func GenerateSSHKeyForUser(user *authentication.User) error {
+	if user == nil {
+		return errors.New("no user provided")
 	}
 
-	_, err := GenerateSSHKey(email)
-	return err
+	if user.Email == "" {
+		return errors.New("user has no email")
+	}
+
+	_, err := GenerateSSHKey(user.Email)
+	return errors.Wrap(err, "failed to generate ssk key")
 }
 
 // GenerateSSHKey generates an SSH key pair in the VS Code container.
@@ -61,12 +66,6 @@ func GenerateSSHKey(email string) (publicKey string, err error) {
 	if err := ConfigureSSHHosts(); err != nil {
 		// Log but don't fail - this is not critical
 		fmt.Printf("Warning: failed to configure SSH hosts: %v\n", err)
-	}
-
-	// Save to settings
-	if err := models.SetSetting("ssh_public_key", publicKey, "ssh_key"); err != nil {
-		// Log but don't fail - key was still generated
-		fmt.Printf("Warning: failed to save SSH key to settings: %v\n", err)
 	}
 
 	return publicKey, nil

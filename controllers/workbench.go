@@ -83,7 +83,8 @@ func (c *WorkbenchController) verifySSHKeys() {
 		return
 	}
 
-	if err := internal.GenerateSSHKeyForUser(); err != nil {
+	auth := c.Use("auth").(*AuthController)
+	if err := internal.GenerateSSHKeyForUser(auth.CurrentUser()); err != nil {
 		log.Printf("Failed to generate SSH key: %v", err)
 	} else {
 		log.Println("SSH key generated successfully")
@@ -100,8 +101,6 @@ func (c *WorkbenchController) verifySSHKeys() {
 // saves repository metadata to database, and logs the activity.
 // Returns error messages for duplicate names or clone failures.
 func (c *WorkbenchController) cloneRepo(w http.ResponseWriter, r *http.Request) {
-	c.SetRequest(r)
-
 	url := r.FormValue("url")
 	name := r.FormValue("name")
 
@@ -131,8 +130,6 @@ func (c *WorkbenchController) cloneRepo(w http.ResponseWriter, r *http.Request) 
 // Updates the last pulled timestamp in the database and logs the activity.
 // Returns error if repository doesn't exist or pull fails.
 func (c *WorkbenchController) pullRepo(w http.ResponseWriter, r *http.Request) {
-	c.SetRequest(r)
-
 	name := r.PathValue("name")
 
 	if err := internal.PullRepository(name); err != nil {
@@ -148,8 +145,6 @@ func (c *WorkbenchController) pullRepo(w http.ResponseWriter, r *http.Request) {
 // database record. This action is permanent and cannot be undone.
 // Logs the deletion activity for audit purposes.
 func (c *WorkbenchController) deleteRepo(w http.ResponseWriter, r *http.Request) {
-	c.SetRequest(r)
-
 	name := r.PathValue("name")
 
 	if err := internal.DeleteRepository(name); err != nil {
@@ -164,22 +159,25 @@ func (c *WorkbenchController) deleteRepo(w http.ResponseWriter, r *http.Request)
 // Stores a setting indicating the user has completed or skipped the tour.
 // This prevents the tour from showing on subsequent visits.
 func (c *WorkbenchController) completeTour(w http.ResponseWriter, r *http.Request) {
-	c.SetRequest(r)
-
 	// Save the tour completion setting
-	if err := models.SetSetting("tour_completed", "true", "user_preference"); err != nil {
+	if _, err := models.SetSetting("tour_completed", "true", "user_preference"); err != nil {
 		log.Printf("Failed to save tour preference: %v", err)
 	}
 
 	// Check if user wants to never show again
 	if r.FormValue("dont_show") == "true" {
-		if err := models.SetSetting("tour_never_show", "true", "user_preference"); err != nil {
+		if _, err := models.SetSetting("tour_never_show", "true", "user_preference"); err != nil {
 			log.Printf("Failed to save tour never show preference: %v", err)
 		}
 	}
 
-	// Log the activity
-	internal.LogUserActivity("tour_complete", "", "Tour completed")
+	go models.Activities.Insert(&models.Activity{
+		Type:        "tour_complete",
+		Repository:  "",
+		Description: "Tour completed",
+		Author:      "",
+		Timestamp:   time.Now(),
+	})
 
 	// Return empty response for HTMX
 	w.WriteHeader(http.StatusOK)
@@ -241,7 +239,14 @@ func (c *WorkbenchController) GetPublicKey() string {
 // Returns human-readable format like "Jan 2, 3:04 PM".
 // Template usage: {{workbench.FormatActivityTime .CreatedAt}}
 func (c *WorkbenchController) FormatActivityTime(t time.Time) string {
-	return internal.FormatTimeInUserTZ(t, c.Request)
+	tzHeader := c.Header.Get("X-User-Timezone")
+	loc, err := time.LoadLocation(tzHeader)
+	if err != nil {
+		log.Printf("Invalid timezone %s: %v", tzHeader, err)
+		loc = time.UTC
+	}
+
+	return t.In(loc).Format("Jan 2, 3:04 PM")
 }
 
 // ShouldShowTour checks if the tour should be displayed to the user.

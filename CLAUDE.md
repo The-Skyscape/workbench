@@ -97,21 +97,14 @@ workbench/
 - **Do**: Define structs, implement Table() method
 - **Never**: Business logic, Git commands
 
-### Import Rules (CRITICAL)
+### Package Architecture
 
-**What each directory CAN import:**
-- **controllers** CAN import: `internal/`, `services/`, `models/`, `devtools/pkg/*`
-- **internal** CAN import: `services/`, `models/`, `devtools/pkg/*`
-- **services** CAN import: `models/`, `devtools/pkg/containers`
-- **models** CAN import: `devtools/pkg/database`
-- **views** CAN import: NOTHING (templates access controllers via template functions)
-
-### Forbidden Imports (NEVER DO THESE)
-- ❌ **internal** CANNOT import `controllers` (business logic doesn't know about HTTP)
-- ❌ **services** CANNOT import `internal` (containers don't know about business logic)
-- ❌ **services** CANNOT import `controllers` (containers don't know about HTTP)
-- ❌ **models** CANNOT import `services`, `internal`, or `controllers` (data doesn't know about logic)
-- ❌ **No circular dependencies**
+**Directory Purposes:**
+- **internal/** - Business logic and shared utilities (Git operations, SSH keys, monitoring)
+- **controllers/** - HTTP request/response handling and routing
+- **services/** - Docker container management (wraps devtools containers.Service)
+- **models/** - Data structures with business methods
+- **views/** - HTML templates that access controller methods
 
 ### Key Features
 

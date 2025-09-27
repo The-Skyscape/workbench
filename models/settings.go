@@ -27,23 +27,22 @@ func GetSetting(key string) (string, error) {
 }
 
 // SetSetting creates or updates a setting
-func SetSetting(key, value, settingType string) error {
-	settings, err := Settings.Search("WHERE Key = ? LIMIT 1", key)
+func SetSetting(key, value, settingType string) (*Setting, error) {
+	setting, err := Settings.Find("WHERE Key = ? LIMIT 1", key)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	
-	if len(settings) > 0 {
+
+	if setting != nil {
 		// Update existing
-		settings[0].Value = value
-		return Settings.Update(settings[0])
+		setting.Value = value
+		return setting, Settings.Update(setting)
 	}
-	
+
 	// Create new
-	_, err = Settings.Insert(&Setting{
+	return Settings.Insert(&Setting{
 		Key:   key,
 		Value: value,
 		Type:  settingType,
 	})
-	return err
 }

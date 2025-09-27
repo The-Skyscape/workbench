@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"time"
 	"workbench/internal"
 	"workbench/models"
 
@@ -69,8 +70,15 @@ func (c *AuthController) handleSignin(w http.ResponseWriter, r *http.Request) {
 	// Rate limiting check - 5 attempts per minute per IP
 	clientIP := r.RemoteAddr // Simple IP for single-user system
 	if !internal.AuthRateLimiter.Allow(clientIP + ":signin") {
+		go models.Activities.Insert(&models.Activity{
+			Type:        "signin_rate_limited",
+			Repository:  "",
+			Description: "Signin rate limited",
+			Author:      "System",
+			Timestamp:   time.Now(),
+		})
+
 		c.RenderError(w, r, errors.New("too many signin attempts. Please wait a minute and try again"))
-		internal.LogActivity("signin_rate_limited", "Signin rate limited")
 		return
 	}
 

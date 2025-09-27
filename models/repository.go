@@ -3,6 +3,10 @@
 package models
 
 import (
+	"fmt"
+	"strings"
+	"workbench/services"
+
 	"github.com/The-Skyscape/devtools/pkg/application"
 )
 
@@ -22,4 +26,21 @@ type Repository struct {
 // Required by the devtools ORM for database operations.
 func (*Repository) Table() string {
 	return "repositories"
+}
+
+// GetRepositorySize calculates the total disk usage of a repository.
+// Uses the 'du' command in the container to get accurate size including
+// all files, git history, and working tree.
+func (repo *Repository) Size() (int64, error) {
+	// Get size using du command in coder container
+	cmd := fmt.Sprintf("du -sb %s | cut -f1", repo.LocalPath)
+	output, err := services.CoderExec(cmd)
+	if err != nil {
+		return 0, err
+	}
+
+	// Parse the size
+	var size int64
+	fmt.Sscanf(strings.TrimSpace(output), "%d", &size)
+	return size, nil
 }

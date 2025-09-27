@@ -5,8 +5,10 @@ package internal
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
 	"strings"
+	"time"
 	"workbench/models"
 	"workbench/services"
 )
@@ -29,28 +31,28 @@ func CloneRepository(url, name string) error {
 		// Auto-detect name from URL
 		name = parseRepoName(url)
 	}
-	
+
 	// Log for debugging
-	Log.Info("Attempting to clone repository: URL=%s, Name=%s", url, name)
+	log.Printf("Attempting to clone repository: URL=%s, Name=%s", url, name)
 
 	// Validate name is not empty
 	if name == "" {
 		return fmt.Errorf("repository name cannot be empty")
 	}
-	
+
 	// Check if repository already exists (case-insensitive)
 	existing, err := models.Repositories.Find("WHERE LOWER(Name) = LOWER(?)", name)
 	if err == nil && existing != nil && existing.Name != "" {
-		Log.Warn("Repository already exists in database: %s (found: %s)", name, existing.Name)
+		log.Printf("Repository already exists in database: %s (found: %s)", name, existing.Name)
 		return fmt.Errorf("a repository named '%s' already exists", existing.Name)
 	}
-	Log.Debug("No existing repository found for name: %s (err: %v)", name, err)
+	log.Printf("No existing repository found for name: %s (err: %v)", name, err)
 
 	// Ensure repos directory exists
 	services.CoderExec("mkdir -p /home/coder/repos")
 
 	targetDir := filepath.Join("/home/coder/repos", name)
-	
+
 	// Check if directory already exists
 	checkCmd := fmt.Sprintf("test -d %s && echo exists", targetDir)
 	exists, _ := services.CoderExec(checkCmd)
@@ -90,7 +92,13 @@ func CloneRepository(url, name string) error {
 	}
 
 	// Log activity
-	LogRepoActivity("repo_clone", name, fmt.Sprintf("Cloned repository %s", name))
+	go models.Activities.Insert(&models.Activity{
+		Type:        "repo_clone",
+		Repository:  name,
+		Description: fmt.Sprintf("Cloned repository %s", name),
+		Author:      "System",
+		Timestamp:   time.Now(),
+	})
 
 	return nil
 }
@@ -114,23 +122,31 @@ func PullRepository(repoName string) error {
 	if err != nil {
 		return fmt.Errorf("repository '%s' not found", repoName)
 	}
-	
+
 	// Check if directory exists
 	checkCmd := fmt.Sprintf("test -d %s && echo exists", repo.LocalPath)
 	exists, _ := services.CoderExec(checkCmd)
 	if strings.TrimSpace(exists) != "exists" {
 		// Try to re-clone if directory is missing
-		Log.Warn("Repository directory missing, attempting to re-clone: %s", repoName)
+		log.Printf("Repository directory missing, attempting to re-clone: %s", repoName)
 		services.CoderExec("mkdir -p /home/coder/repos")
 		cmd := fmt.Sprintf("git clone %s %s 2>&1", repo.URL, repo.LocalPath)
 		_, err := services.CoderExec(cmd)
 		if err != nil {
 			return fmt.Errorf("repository directory was missing and re-clone failed")
 		}
-		LogRepoActivity("repo_pull", repoName, fmt.Sprintf("Re-cloned missing repository %s", repoName))
+
+		go models.Activities.Insert(&models.Activity{
+			Type:        "repo_pull",
+			Repository:  repo.Name,
+			Description: fmt.Sprintf("Re-cloned missing repository %s", repoName),
+			Author:      "System",
+			Timestamp:   time.Now(),
+		})
+
 		return nil
 	}
-	
+
 	cmd := fmt.Sprintf("cd %s && git pull 2>&1", repo.LocalPath)
 	output, err := services.CoderExec(cmd)
 	if err != nil {
@@ -150,7 +166,13 @@ func PullRepository(repoName string) error {
 	}
 
 	// Log activity
-	LogRepoActivity("repo_pull", repoName, fmt.Sprintf("Synced repository %s", repoName))
+	go models.Activities.Insert(&models.Activity{
+		Type:        "repo_pull",
+		Repository:  repoName,
+		Description: fmt.Sprintf("Synced repository %s", repoName),
+		Author:      "System",
+		Timestamp:   time.Now(),
+	})
 
 	return nil
 }
@@ -184,39 +206,15 @@ func DeleteRepository(name string) error {
 	}
 
 	// Log activity
-	LogRepoActivity("repo_delete", name, fmt.Sprintf("Deleted repository %s", name))
+	go models.Activities.Insert(&models.Activity{
+		Type:        "repo_delete",
+		Repository:  name,
+		Description: fmt.Sprintf("Deleted repository %s", name),
+		Author:      "System",
+		Timestamp:   time.Now(),
+	})
 
 	return nil
-}
-
-
-// GetRepositorySize calculates the total disk usage of a repository.
-// Uses the 'du' command in the container to get accurate size including
-// all files, git history, and working tree.
-//
-// Parameters:
-//   - name: The repository name
-//
-// Returns:
-//   - Size in bytes, or 0 if error
-//   - Error if repository not found or command fails
-func GetRepositorySize(name string) (int64, error) {
-	repo, err := models.Repositories.Find("WHERE Name = ?", name)
-	if err != nil {
-		return 0, err
-	}
-
-	// Get size using du command in coder container
-	cmd := fmt.Sprintf("du -sb %s | cut -f1", repo.LocalPath)
-	output, err := services.CoderExec(cmd)
-	if err != nil {
-		return 0, err
-	}
-
-	// Parse the size
-	var size int64
-	fmt.Sscanf(strings.TrimSpace(output), "%d", &size)
-	return size, nil
 }
 
 // parseRepoName extracts a clean repository name from various Git URL formats.
@@ -232,10 +230,10 @@ func parseRepoName(url string) string {
 	if url == "" {
 		return ""
 	}
-	
+
 	// Clean up the URL
 	url = strings.TrimSpace(url)
-	url = strings.TrimSuffix(url, "/")  // Remove trailing slash
+	url = strings.TrimSuffix(url, "/") // Remove trailing slash
 	url = strings.TrimSuffix(url, ".git")
 
 	// Handle SSH URLs (git@github.com:user/repo)
