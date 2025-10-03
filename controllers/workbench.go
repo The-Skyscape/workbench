@@ -83,12 +83,12 @@ func (c *WorkbenchController) verifySSHKeys() {
 		return
 	}
 
-	auth := c.Use("auth").(*AuthController)
-	if err := internal.GenerateSSHKeyForUser(auth.CurrentUser()); err != nil {
-		log.Printf("Failed to generate SSH key: %v", err)
-	} else {
-		log.Println("SSH key generated successfully")
-	}
+	// auth := c.Use("auth").(*AuthController)
+	// if err := internal.GenerateSSHKeyForUser(auth.CurrentUser()); err != nil {
+	// 	log.Printf("Failed to generate SSH key: %v", err)
+	// } else {
+	// 	log.Println("SSH key generated successfully")
+	// }
 }
 
 // ============================================================================
