@@ -41,7 +41,7 @@ func CloneRepository(url, name string) error {
 	}
 
 	// Check if repository already exists (case-insensitive)
-	existing, err := models.Repositories.Find("WHERE LOWER(Name) = LOWER(?)", name)
+	existing, err := models.Repositories.First("WHERE LOWER(Name) = LOWER(?)", name)
 	if err == nil && existing != nil && existing.Name != "" {
 		log.Printf("Repository already exists in database: %s (found: %s)", name, existing.Name)
 		return fmt.Errorf("a repository named '%s' already exists", existing.Name)
@@ -118,7 +118,7 @@ func CloneRepository(url, name string) error {
 //
 // Returns detailed error messages to guide user actions.
 func PullRepository(repoName string) error {
-	repo, err := models.Repositories.Find("WHERE Name = ?", repoName)
+	repo, err := models.Repositories.First("WHERE Name = ?", repoName)
 	if err != nil {
 		return fmt.Errorf("repository '%s' not found", repoName)
 	}
@@ -189,7 +189,7 @@ func PullRepository(repoName string) error {
 //
 // Returns error if repository not found or deletion fails.
 func DeleteRepository(name string) error {
-	repo, err := models.Repositories.Find("WHERE Name = ?", name)
+	repo, err := models.Repositories.First("WHERE Name = ?", name)
 	if err != nil {
 		return fmt.Errorf("repository not found: %s", name)
 	}
